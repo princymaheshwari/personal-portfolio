@@ -17,7 +17,7 @@ If you discover a security vulnerability in this portfolio website, please follo
 Security vulnerabilities should be reported privately to avoid potential exploitation.
 
 ### 2. **Contact Me Directly**
-Send an email to: **contact@imraunak.dev**
+Send an email to: **princymaheshwari069@gmail.com**
 
 Please include:
 - Description of the vulnerability
@@ -82,7 +82,7 @@ I appreciate responsible disclosure practices. Security researchers who report v
 ## 📞 Contact
 
 For security concerns:
-- **Email**: contact@imraunak.dev
+- **Email**: princymaheshwari069@gmail.com
 - **GitHub**: [@princymaheshwari](https://github.com/princymaheshwari)
 
 For general questions, please open a regular issue.

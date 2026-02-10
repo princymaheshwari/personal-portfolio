@@ -98,7 +98,7 @@ By contributing, you agree that your contributions will be licensed under the MI
 ## 💬 Questions?
 
 Feel free to reach out:
-- Email: contact@imraunak.dev
+- Email: princymaheshwari069@gmail.com
 - GitHub: [@princymaheshwari](https://github.com/princymaheshwari)
 
 ---
