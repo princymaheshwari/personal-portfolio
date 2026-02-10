@@ -166,8 +166,8 @@ particlesJS("particles-contact", {
     resizeCanvas();
     window.addEventListener('resize', resizeCanvas);
 
-    // Matrix characters - using programming symbols and binary
-    const chars = '01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン{}[]<>/\\|~`!@#$%^&amp;*()_+-=';
+    // Matrix characters - binary-only for a tech feel
+    const chars = '01';
     const charArray = chars.split('');
 
     const fontSize = 20; // Increased to reduce density
