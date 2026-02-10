@@ -526,7 +526,7 @@ Message:
 ${data.message}
         `);
 
-        const mailtoLink = `mailto:abhijeetbhale7@gmail.com?subject=${emailSubject}&body=${emailBody}`;
+        const mailtoLink = `mailto:[email redacted]?subject=${emailSubject}&body=${emailBody}`;
 
         showMessage(`Form submission failed. <a href="${mailtoLink}" class="underline">Click here to send email directly</a> or try again later.`, 'error');
       } finally {
