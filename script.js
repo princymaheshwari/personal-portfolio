@@ -571,10 +571,7 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   // Preload critical images
-  const criticalImages = [
-    './assets/AbhijeetBhalePortfolio.jpg',
-    './assets/cursor.png'
-  ];
+  const criticalImages = ['./assets/cursor.png'];
 
   criticalImages.forEach(src => {
     const link = document.createElement('link');
