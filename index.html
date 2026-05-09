@@ -693,6 +693,45 @@
 
 
 
+  <!-- RELEVANT COURSEWORK -->
+  <section id="relevant-coursework" class="relative bg-black text-white py-20 px-6 overflow-hidden">
+    <div id="particles-coursework" class="absolute top-0 left-0 w-full h-full z-0"></div>
+    <div class="relative z-10 max-w-6xl mx-auto">
+      <div class="text-center mb-12">
+        <h2 class="text-4xl font-bold mb-4">Relevant Coursework</h2>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
+        <div
+          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
+          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
+            Code Path AI110 – Foundations of AI Engineering
+          </h3>
+        </div>
+        <div
+          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
+          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
+            CSC 1301 &amp; 1302 – Principles of Computer Science I &amp; II
+          </h3>
+        </div>
+        <div
+          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
+          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
+            Calculus I &amp; II
+          </h3>
+        </div>
+        <div
+          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
+          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
+            Discrete Mathematics
+          </h3>
+        </div>
+      </div>
+    </div>
+  </section>
+
+
+
   <!-- CONTACT FORM SECTION -->
   <section id="contact-form" class="bg-[#0f0f0f] text-white py-20 px-6">
     <div class="max-w-4xl mx-auto">
@@ -823,10 +862,17 @@
     <div id="particles-contact" class="absolute top-0 left-0 w-full h-full z-0"></div>
 
     <div class="w-full max-w-4xl text-center flex flex-col items-center gap-6 relative z-10">
-      <!-- Subtitle -->
-      <p class="text-gray-400 text-lg">Let's connect and build something amazing!</p>
+      <h2 class="text-2xl md:text-3xl font-bold text-white px-4">Let's connect and build something amazing!</h2>
 
-      <p class="text-gray-400 text-lg max-w-xl mx-auto">The best way to reach me is the contact form above — it keeps spam down and goes straight to my inbox.</p>
+      <div class="space-y-4 max-w-2xl mx-auto px-4">
+        <p class="text-gray-300 text-lg leading-relaxed">
+          I'm open to collaborations on interesting projects, research ideas, and deep-tech initiatives. Whether it's
+          exploring inference optimization, building agentic systems, or tackling quantitative problems—let's talk.
+        </p>
+        <p class="text-gray-400 text-lg leading-relaxed">
+          The best way to reach me is through the contact form above.
+        </p>
+      </div>
       <a href="#contact-form"
         class="inline-block mt-6 bg-[#1DCD9F] text-white font-semibold px-8 py-3 rounded-lg hover:bg-[#17b890] transition-colors">
         Open contact form
@@ -840,21 +886,8 @@
     <div id="particles-footer" class="absolute top-0 left-0 w-full h-full z-0"></div>
 
     <div class="max-w-6xl mx-auto relative z-10">
-      <div class="grid md:grid-cols-3 gap-10 mb-8">
-        <!-- Left Section - About -->
-        <div>
-          <h3 class="text-2xl font-bold mb-3" style="color: #FFA500;">Princy Maheshwari</h3>
-          <p class="text-gray-300 mb-4 leading-relaxed">
-            Passionate full-stack developer crafting beautiful digital experiences with modern technologies.
-            Always learning, always building.
-          </p>
-          <div class="flex items-center text-gray-300">
-            <i class="fas fa-map-marker-alt mr-2" style="color: #FFA500;"></i>
-            <span>Atlanta, Georgia</span>
-          </div>
-        </div>
-
-        <!-- Middle Section - Quick Links -->
+      <div class="grid md:grid-cols-2 gap-10 mb-8 md:max-w-3xl md:mx-auto">
+        <!-- Quick Links -->
         <div>
           <h4 class="text-xl font-semibold mb-4 text-[#1DCD9F]">Quick Links</h4>
           <div class="grid grid-cols-2 gap-3">
@@ -862,11 +895,12 @@
             <a href="#about" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">About</a>
             <a href="#tech-stack" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Skills</a>
             <a href="#projects" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Projects</a>
+            <a href="#relevant-coursework" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Coursework</a>
             <a href="#contact-form" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Contact</a>
           </div>
         </div>
 
-        <!-- Right Section - Get In Touch -->
+        <!-- Get In Touch -->
         <div>
           <h4 class="text-xl font-semibold mb-4 text-[#1DCD9F]">Get In Touch</h4>
           <div class="space-y-3">
@@ -892,10 +926,6 @@
         <a href="https://www.linkedin.com/in/princy-maheshwari1/" target="_blank"
           class="w-12 h-12 rounded-full bg-gray-800 hover:bg-[#1DCD9F] flex items-center justify-center transition-all">
           <i class="fab fa-linkedin-in text-xl"></i>
-        </a>
-        <a href="https://www.facebook.com/profile.php?id=61561518849243" target="_blank"
-          class="w-12 h-12 rounded-full bg-gray-800 hover:bg-[#1DCD9F] flex items-center justify-center transition-all">
-          <i class="fab fa-facebook-f text-xl"></i>
         </a>
         <a href="#contact-form"
           class="w-12 h-12 rounded-full bg-gray-800 hover:bg-[#1DCD9F] flex items-center justify-center transition-all"

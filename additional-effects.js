@@ -113,6 +113,44 @@ particlesJS("particles-about", {
     "retina_detect": true
 });
 
+// Relevant Coursework Section Particles
+particlesJS("particles-coursework", {
+    "particles": {
+        "number": { "value": 30 },
+        "color": { "value": "#1DCD9F" },
+        "shape": { "type": "circle" },
+        "opacity": {
+            "value": 0.4,
+            "random": true
+        },
+        "size": {
+            "value": 2,
+            "random": true
+        },
+        "line_linked": {
+            "enable": true,
+            "distance": 120,
+            "color": "#1DCD9F",
+            "opacity": 0.25,
+            "width": 1
+        },
+        "move": {
+            "enable": true,
+            "speed": 1.5,
+            "direction": "none",
+            "out_mode": "out"
+        }
+    },
+    "interactivity": {
+        "detect_on": "canvas",
+        "events": {
+            "onhover": { "enable": false },
+            "onclick": { "enable": false }
+        }
+    },
+    "retina_detect": true
+});
+
 // Contact Section Particles
 particlesJS("particles-contact", {
     "particles": {

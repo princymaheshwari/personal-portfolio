@@ -626,7 +626,8 @@ li:hover::after {
 
 /* Ensure particles work with locomotive scroll */
 #particles-hero,
-#particles-projects {
+#particles-projects,
+#particles-coursework {
   position: absolute !important;
   z-index: 0;
 }
@@ -643,6 +644,7 @@ button,
 .shadow__btn,
 .download-label,
 .project-card,
+.coursework-card,
 .upcoming-card,
 .journey-card,
 .example-2 .icon-content a,
@@ -724,7 +726,8 @@ html {
 
 /* Optimize particle animations */
 #particles-hero,
-#particles-projects {
+#particles-projects,
+#particles-coursework {
   contain: layout style paint;
   will-change: transform;
 }
