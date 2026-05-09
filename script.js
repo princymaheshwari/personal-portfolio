@@ -514,21 +514,10 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       } catch (error) {
         console.error('Error:', error);
-
-        // Fallback: Send email directly (this will open user's email client)
-        const emailSubject = encodeURIComponent(`Portfolio Contact: ${data.subject}`);
-        const emailBody = encodeURIComponent(`
-Name: ${data.firstName} ${data.lastName}
-Email: ${data.email}
-Subject: ${data.subject}
-
-Message:
-${data.message}
-        `);
-
-        const mailtoLink = `mailto:[email redacted]?subject=${emailSubject}&body=${emailBody}`;
-
-        showMessage(`Form submission failed. <a href="${mailtoLink}" class="underline">Click here to send email directly</a> or try again later.`, 'error');
+        showMessage(
+          'Something went wrong and your message was not sent. Please try again in a few minutes.',
+          'error'
+        );
       } finally {
         // Reset button state
         submitBtn.disabled = false;

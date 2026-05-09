@@ -24,8 +24,8 @@ Enhancement suggestions are welcome! Please include:
 
 1. **Fork the repository**
    ```bash
-   git clone https://github.com/princymaheshwari/portfolio.git
-   cd portfolio
+   git clone https://github.com/princymaheshwari/personal-portfolio.git
+   cd personal-portfolio
    ```
 
 2. **Create a feature branch**
@@ -97,9 +97,9 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 ## 💬 Questions?
 
-Feel free to reach out:
-- Email: [email redacted]
-- GitHub: [@princymaheshwari](https://github.com/princymaheshwari)
+Feel free to reach out via **[GitHub Issues](https://github.com/princymaheshwari/personal-portfolio/issues)** for questions about contributing.
+
+You can also connect on GitHub: [@princymaheshwari](https://github.com/princymaheshwari)
 
 ---
 

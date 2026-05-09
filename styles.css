@@ -403,11 +403,6 @@ li:hover::after {
   background-color: #0a66c2;
 }
 
-.example-2 .icon-content a[data-social="email"] .filled,
-.example-2 .icon-content a[data-social="email"]~.tooltip {
-  background-color: #ea4335;
-}
-
 .example-2 .icon-content a[data-social="github"] .filled,
 .example-2 .icon-content a[data-social="github"]~.tooltip {
   background-color: #333;

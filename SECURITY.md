@@ -16,8 +16,8 @@ If you discover a security vulnerability in this portfolio website, please follo
 ### 1. **Do Not** Open a Public Issue
 Security vulnerabilities should be reported privately to avoid potential exploitation.
 
-### 2. **Contact Me Directly**
-Send an email to: **[email redacted]**
+### 2. **Report Privately on GitHub**
+Use the repository’s **Security** tab and choose **Report a vulnerability** (GitHub private security advisory). That keeps details non-public while we coordinate a fix.
 
 Please include:
 - Description of the vulnerability
@@ -69,7 +69,7 @@ This portfolio follows these security practices:
 
 Security updates are released as needed. To stay updated:
 - Watch this repository for updates
-- Check the [releases page](https://github.com/princymaheshwari/portfolio/releases)
+- Check the [releases page](https://github.com/princymaheshwari/personal-portfolio/releases)
 - Follow me on [GitHub](https://github.com/princymaheshwari)
 
 ## ✅ Responsible Disclosure
@@ -81,9 +81,7 @@ I appreciate responsible disclosure practices. Security researchers who report v
 
 ## 📞 Contact
 
-For security concerns:
-- **Email**: [email redacted]
-- **GitHub**: [@princymaheshwari](https://github.com/princymaheshwari)
+For security concerns, use **Report a vulnerability** on this repository’s GitHub Security tab.
 
 For general questions, please open a regular issue.
 
