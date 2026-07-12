@@ -307,7 +307,7 @@ window.PMBoard = (function () {
   }
 
   function tagTexture(label) {
-    const W = 640, H = 170;
+    const W = 720, H = 190;
     const c = makeCanvas(W, H);
     const x = c.getContext("2d");
     x.fillStyle = COL.kraft;
@@ -326,7 +326,7 @@ window.PMBoard = (function () {
     x.fillStyle = "#f4ecd9";
     x.beginPath(); x.arc(52, H / 2, 8, 0, 7); x.fill();
     x.fillStyle = "#241b10";
-    let fs = 78;
+    let fs = 92;
     x.font = `600 ${fs}px "Caveat", cursive`;
     let w = x.measureText(label).width;
     const maxW = W - 130;
@@ -490,7 +490,7 @@ window.PMBoard = (function () {
       scene.add(tube);
 
       /* kraft tag at the midpoint naming what transferred */
-      const tw = 11.5, thh = 3.05;
+      const tw = 15, thh = 4;
       const tag = new THREE.Mesh(
         new THREE.PlaneGeometry(tw, thh),
         new THREE.MeshStandardMaterial({ map: tagTexture(th.label), roughness: 0.9, transparent: true })
