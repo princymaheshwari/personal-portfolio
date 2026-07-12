@@ -12,7 +12,7 @@
   </script>
 
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Case Nº 2026-PM — Princy Maheshwari</title>
   <meta name="description"
     content="Case file on Princy Maheshwari: a Computer Science student who enters unfamiliar technical domains — heliophysics to bioinformatics — and ships working systems within hours. Explore the 3D evidence board." />
@@ -34,8 +34,9 @@
   </div>
 
   <!-- 3D board -->
-  <canvas id="board-canvas" aria-label="3D evidence board — use the flat file link for a text version"></canvas>
+  <canvas id="board-canvas" aria-label="3D evidence board — use the text view link for an accessible version"></canvas>
   <div id="board-tooltip" aria-hidden="true"></div>
+  <div id="board-hint" aria-hidden="true">TAP A CASE TO INSPECT · USE TABS TO FILTER</div>
   <div id="scroll-space"></div>
 
   <!-- case tabs -->
@@ -47,7 +48,7 @@
       <a href="#" data-region="evidence">EVIDENCE</a>
       <a href="#" data-region="mo">M.O.</a>
       <a href="#" data-region="tipline">TIP LINE</a>
-      <a href="#" class="mode-switch" title="Accessible text version">FLAT FILE</a>
+      <a href="#" class="mode-switch" title="Accessible text version">TEXT VIEW</a>
     </div>
   </nav>
 
@@ -59,13 +60,14 @@
     </div>
   </aside>
 
-  <!-- flat fallback (mobile / reduced motion / no WebGL) -->
+  <!-- semantic text fallback (reduced motion / no WebGL / manual switch) -->
   <main id="flat-root"></main>
 
   <!-- tip line -->
-  <section id="tipline" aria-label="Contact">
+  <section id="tipline" aria-label="Contact" aria-hidden="true">
     <div class="tip-paper">
-      <p class="tip-head">☎ TIP LINE</p>
+      <button id="tipline-close" aria-label="Close tip line">CLOSE TIP LINE ✕</button>
+      <p class="tip-head" id="tipline-heading">☎ TIP LINE</p>
       <p class="tip-sub">Wanna build something technically ambitious? Then contact me. Leave a statement — replies within 48 hours. Atlanta, GA.</p>
       <form id="contactForm" novalidate>
         <div class="form-row">

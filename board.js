@@ -41,13 +41,19 @@ window.PMBoard = (function () {
   let dust;
   let raycaster, pointer;
   let hovered = null;
-  let focus = null; // {card, prevCam}
+  let focus = null; // {grp, returnView, settled}
   let camY = { cur: BOARD_TOP - 24, target: BOARD_TOP - 24 };
   let camX = { cur: 0, target: 0 };
   let camZ = { cur: 120, target: 62 };
   let lookY = { cur: BOARD_TOP - 24 };
   let clock;
+  let viewMode = "desktop-scroll";
+  let currentOverview = null;
+  let overviewSettled = true;
+  let pointerDown = null;
   let onFocusChange = null;
+  let onFocusSettled = null;
+  let onOverviewSettled = null;
   let onHoverChange = null;
 
   /* ---------------- texture helpers ---------------- */
@@ -418,7 +424,8 @@ window.PMBoard = (function () {
     });
 
     /* dust motes */
-    const N = 340, pos = new Float32Array(N * 3);
+    const N = viewMode === "mobile-overview" ? 120 : 340;
+    const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 180;
       pos[i * 3 + 1] = BOARD_BOT + Math.random() * (BOARD_TOP - BOARD_BOT);
@@ -564,20 +571,154 @@ window.PMBoard = (function () {
     return hits.length ? hits[0].object.userData.root : null;
   }
 
+  function pickNearest(clientX, clientY, maxDistance) {
+    const rect = renderer.domElement.getBoundingClientRect();
+    let nearest = null;
+    let nearestDistance = maxDistance;
+    const projected = new THREE.Vector3();
+
+    cardMeshes.forEach((paper) => {
+      const card = paper.userData.root.userData.card;
+      projected.set(card.pos[0], card.pos[1], CARD_Z).project(camera);
+      const x = rect.left + (projected.x + 1) * rect.width / 2;
+      const y = rect.top + (1 - projected.y) * rect.height / 2;
+      const distance = Math.hypot(clientX - x, clientY - y);
+      if (distance <= nearestDistance) {
+        nearestDistance = distance;
+        nearest = paper.userData.root;
+      }
+    });
+
+    return nearest;
+  }
+
+  function clearHover() {
+    hovered = null;
+    document.body.classList.remove("board-hover");
+    if (onHoverChange) onHoverChange(null, null);
+  }
+
+  function boundsForRegion(regionId) {
+    if (!regionId) {
+      return {
+        left: -(BOARD_W / 2 + 3.2),
+        right: BOARD_W / 2 + 3.2,
+        top: BOARD_TOP + 3.2,
+        bottom: BOARD_BOT - 3.2,
+      };
+    }
+
+    const cards = D.cards.filter((card) => card.region === regionId);
+    if (!cards.length) return boundsForRegion(null);
+    const bounds = cards.reduce((box, card) => ({
+      left: Math.min(box.left, card.pos[0] - card.w / 2),
+      right: Math.max(box.right, card.pos[0] + card.w / 2),
+      top: Math.max(box.top, card.pos[1] + card.h / 2),
+      bottom: Math.min(box.bottom, card.pos[1] - card.h / 2),
+    }), { left: Infinity, right: -Infinity, top: -Infinity, bottom: Infinity });
+
+    const gutter = regionId === "tipline" ? 7 : 4;
+    bounds.left -= gutter;
+    bounds.right += gutter;
+    bounds.top += gutter;
+    bounds.bottom -= gutter;
+    return bounds;
+  }
+
+  function viewForBounds(bounds, padding) {
+    const width = bounds.right - bounds.left;
+    const height = bounds.top - bounds.bottom;
+    const halfFov = camera.fov * Math.PI / 360;
+    const mobile = viewMode === "mobile-overview";
+    const rootStyle = mobile ? getComputedStyle(document.documentElement) : null;
+    const safeTop = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-top")) || 0 : 0;
+    const safeRight = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-right")) || 0 : 0;
+    const safeBottom = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-bottom")) || 0 : 0;
+    const safeLeft = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-left")) || 0 : 0;
+    const topInset = mobile ? Math.min(170, 97 + Math.max(7, safeTop)) : 0;
+    const rightInset = mobile ? 12 + safeRight : 0;
+    const bottomInset = mobile ? Math.min(90, 31 + Math.max(13, safeBottom)) : 0;
+    const leftInset = mobile ? 12 + safeLeft : 0;
+    const heightFraction = mobile
+      ? Math.max(0.5, (window.innerHeight - topInset - bottomInset) / window.innerHeight)
+      : 1;
+    const widthFraction = mobile
+      ? Math.max(0.72, (window.innerWidth - leftInset - rightInset) / window.innerWidth)
+      : 1;
+    const distanceForHeight = height / (2 * Math.tan(halfFov) * heightFraction);
+    const distanceForWidth = width / (2 * Math.tan(halfFov) * camera.aspect * widthFraction);
+    const z = Math.max(distanceForHeight, distanceForWidth) * padding + 4;
+    const visibleWorldHeight = 2 * z * Math.tan(halfFov);
+    const visibleWorldWidth = visibleWorldHeight * camera.aspect;
+    const horizontalOffset = mobile
+      ? -((leftInset - rightInset) / 2) * (visibleWorldWidth / window.innerWidth)
+      : 0;
+    const verticalOffset = mobile
+      ? ((topInset - bottomInset) / 2) * (visibleWorldHeight / window.innerHeight)
+      : 0;
+    return {
+      x: (bounds.left + bounds.right) / 2 + horizontalOffset,
+      y: (bounds.top + bounds.bottom) / 2 + verticalOffset,
+      z,
+    };
+  }
+
+  function applyView(view, immediate) {
+    camX.target = view.x;
+    camY.target = view.y;
+    camZ.target = view.z;
+    if (immediate) {
+      camX.cur = view.x;
+      camY.cur = view.y;
+      camZ.cur = view.z;
+      lookY.cur = view.y;
+    }
+  }
+
+  function setOverview(regionId, immediate) {
+    focus = null;
+    clearHover();
+    currentOverview = regionId || null;
+    overviewSettled = !!immediate;
+    const padding = currentOverview ? 1.18 : 1.08;
+    applyView(viewForBounds(boundsForRegion(currentOverview), padding), !!immediate);
+    if (immediate && onOverviewSettled) onOverviewSettled(currentOverview);
+  }
+
+  function focusView(card) {
+    const bounds = {
+      left: card.pos[0] - card.w / 2,
+      right: card.pos[0] + card.w / 2,
+      top: card.pos[1] + card.h / 2,
+      bottom: card.pos[1] - card.h / 2,
+    };
+    return viewForBounds(bounds, 1.42);
+  }
+
   function focusCard(grp) {
     const card = grp.userData.card;
-    focus = { grp };
-    const fitH = Math.max(card.h * 1.55, card.w * 1.15 / camera.aspect);
-    camZ.target = fitH / (2 * Math.tan((camera.fov * Math.PI) / 360)) + 4;
-    camX.target = card.pos[0] * 0.92;
-    camY.target = card.pos[1];
-    if (onFocusChange) onFocusChange(card);
+    focus = { grp, returnView: currentOverview, settled: false };
+    clearHover();
+    if (viewMode === "mobile-overview") {
+      applyView(focusView(card), false);
+    } else {
+      const fitH = Math.max(card.h * 1.55, card.w * 1.15 / camera.aspect);
+      camZ.target = fitH / (2 * Math.tan((camera.fov * Math.PI) / 360)) + 4;
+      camX.target = card.pos[0] * 0.92;
+      camY.target = card.pos[1];
+      if (onFocusChange) onFocusChange(card);
+    }
   }
 
   function unfocus() {
+    const returnView = focus ? focus.returnView : currentOverview;
     focus = null;
-    camZ.target = 62;
-    camX.target = 0;
+    if (viewMode === "mobile-overview") {
+      setOverview(returnView, false);
+    } else {
+      camZ.target = 62;
+      camX.target = 0;
+    }
     if (onFocusChange) onFocusChange(null);
   }
 
@@ -585,17 +726,32 @@ window.PMBoard = (function () {
 
   function animate() {
     requestAnimationFrame(animate);
+    if (document.hidden) return;
     const t = clock.getElapsedTime();
 
     /* camera easing */
-    camY.cur += (camY.target - camY.cur) * 0.07;
-    camX.cur += (camX.target - camX.cur) * 0.06;
-    camZ.cur += (camZ.target - camZ.cur) * 0.05;
-    const parX = focus ? 0 : pointer.x * 3.4;
-    const parY = focus ? 0 : pointer.y * 1.8;
+    const mobileEase = viewMode === "mobile-overview";
+    camY.cur += (camY.target - camY.cur) * (mobileEase ? 0.09 : 0.07);
+    camX.cur += (camX.target - camX.cur) * (mobileEase ? 0.09 : 0.06);
+    camZ.cur += (camZ.target - camZ.cur) * (mobileEase ? 0.085 : 0.05);
+    const allowParallax = viewMode === "desktop-scroll" && !focus;
+    const parX = allowParallax ? pointer.x * 3.4 : 0;
+    const parY = allowParallax ? pointer.y * 1.8 : 0;
     camera.position.set(camX.cur + parX, camY.cur + parY, camZ.cur);
-    lookY.cur += (camY.target - lookY.cur) * 0.07;
+    lookY.cur += (camY.target - lookY.cur) * (mobileEase ? 0.09 : 0.07);
     camera.lookAt(camX.cur + parX * 0.55, lookY.cur + parY * 0.55, 0);
+
+    const cameraSettled =
+      Math.abs(camX.target - camX.cur) < 0.18 &&
+      Math.abs(camY.target - camY.cur) < 0.18 &&
+      Math.abs(camZ.target - camZ.cur) < 0.35;
+    if (focus && !focus.settled && cameraSettled) {
+      focus.settled = true;
+      if (onFocusSettled) onFocusSettled(focus.grp.userData.card);
+    } else if (!focus && !overviewSettled && cameraSettled) {
+      overviewSettled = true;
+      if (onOverviewSettled) onOverviewSettled(currentOverview);
+    }
 
     /* lamp follows like a flashlight, with a slow pendulum */
     lamp.position.set(Math.sin(t * 0.7) * 5, camY.cur + 26, 46);
@@ -625,11 +781,14 @@ window.PMBoard = (function () {
   /* ---------------- public ---------------- */
 
   function init(opts) {
+    viewMode = opts.viewMode || "desktop-scroll";
     onFocusChange = opts.onFocusChange || null;
+    onFocusSettled = opts.onFocusSettled || null;
+    onOverviewSettled = opts.onOverviewSettled || null;
     onHoverChange = opts.onHoverChange || null;
 
     renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, viewMode === "mobile-overview" ? 1.5 : 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -639,16 +798,24 @@ window.PMBoard = (function () {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(COL.fog);
-    scene.fog = new THREE.Fog(COL.fog, 130, 320);
+    scene.fog = viewMode === "mobile-overview"
+      ? new THREE.Fog(COL.fog, 520, 900)
+      : new THREE.Fog(COL.fog, 130, 320);
 
-    camera = new THREE.PerspectiveCamera(46, window.innerWidth / window.innerHeight, 0.5, 500);
+    camera = new THREE.PerspectiveCamera(
+      46,
+      window.innerWidth / window.innerHeight,
+      0.5,
+      viewMode === "mobile-overview" ? 1200 : 500
+    );
     camera.position.set(0, camY.cur, camZ.cur);
 
     /* lights */
     scene.add(new THREE.AmbientLight(0x51503f, 0.85));
     lamp = new THREE.SpotLight(0xffd9a3, 1.2, 320, 0.72, 0.6, 1.1);
     lamp.castShadow = true;
-    lamp.shadow.mapSize.set(1024, 1024);
+    const shadowSize = viewMode === "mobile-overview" ? 512 : 1024;
+    lamp.shadow.mapSize.set(shadowSize, shadowSize);
     lamp.shadow.bias = -0.002;
     lampTarget = new THREE.Object3D();
     scene.add(lampTarget);
@@ -666,51 +833,69 @@ window.PMBoard = (function () {
     buildCards(opts.images);
     buildThreads();
 
+    if (viewMode === "mobile-overview") setOverview(null, true);
+
     /* events */
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-    });
-
-    opts.canvas.addEventListener("pointermove", (e) => {
-      setPointer(e);
-      if (focus) {
-        if (onHoverChange) onHoverChange(null, null);
-        return;
-      }
-      const hit = pick();
-      hovered = hit;
-      document.body.classList.toggle("board-hover", !!hit);
-      if (onHoverChange) {
-        onHoverChange(
-          hit ? hit.userData.card : null,
-          hit ? { x: e.clientX, y: e.clientY } : null
-        );
+      if (viewMode === "mobile-overview") {
+        if (focus) applyView(focusView(focus.grp.userData.card), false);
+        else setOverview(currentOverview, false);
       }
     });
 
-    opts.canvas.addEventListener("pointerleave", () => {
-      hovered = null;
-      document.body.classList.remove("board-hover");
-      if (onHoverChange) onHoverChange(null, null);
-    });
+    if (viewMode === "mobile-overview") {
+      opts.canvas.addEventListener("pointerdown", (e) => {
+        pointerDown = { x: e.clientX, y: e.clientY };
+      });
 
-    opts.canvas.addEventListener("click", (e) => {
-      if (focus) return;
-      setPointer(e);
-      const hit = pick();
-      if (hit) {
-        hovered = null;
-        document.body.classList.remove("board-hover");
-        if (onHoverChange) onHoverChange(null, null);
-        focusCard(hit);
-      }
-    });
+      opts.canvas.addEventListener("pointerup", (e) => {
+        if (!pointerDown) return;
+        const moved = Math.hypot(e.clientX - pointerDown.x, e.clientY - pointerDown.y);
+        pointerDown = null;
+        if (moved > 10 || focus) return;
+        setPointer(e);
+        const hit = pick() || pickNearest(e.clientX, e.clientY, 32);
+        if (hit) focusCard(hit);
+      });
+
+      opts.canvas.addEventListener("pointercancel", () => {
+        pointerDown = null;
+      });
+    } else {
+      opts.canvas.addEventListener("pointermove", (e) => {
+        setPointer(e);
+        if (focus) {
+          if (onHoverChange) onHoverChange(null, null);
+          return;
+        }
+        const hit = pick();
+        hovered = hit;
+        document.body.classList.toggle("board-hover", !!hit);
+        if (onHoverChange) {
+          onHoverChange(
+            hit ? hit.userData.card : null,
+            hit ? { x: e.clientX, y: e.clientY } : null
+          );
+        }
+      });
+
+      opts.canvas.addEventListener("pointerleave", clearHover);
+
+      opts.canvas.addEventListener("click", (e) => {
+        if (focus) return;
+        setPointer(e);
+        const hit = pick();
+        if (hit) focusCard(hit);
+      });
+    }
 
     animate();
     return {
       setScrollT(tt) {
+        if (viewMode === "mobile-overview") return;
         if (focus) return;
         if (hovered) {
           hovered = null;
@@ -722,6 +907,9 @@ window.PMBoard = (function () {
         camY.target = top + (bot - top) * tt;
       },
       jumpTo(y) { camY.target = y; lookY.cur = y; camY.cur = y; },
+      showOverview(regionId) {
+        if (viewMode === "mobile-overview") setOverview(regionId, false);
+      },
       unfocus,
       isFocused() { return !!focus; },
       cameraY() { return camY.cur; },

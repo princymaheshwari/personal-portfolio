@@ -10,7 +10,7 @@
 
   const D = window.CASE_DATA;
   const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-  const smallScreen = window.matchMedia("(max-width: 880px)").matches;
+  const query = new URLSearchParams(location.search);
 
   function webglOK() {
     try {
@@ -21,17 +21,27 @@
     }
   }
 
-  const wantFlat =
-    reducedMotion || smallScreen || !webglOK() ||
-    new URLSearchParams(location.search).get("flat") === "1";
+  const supports3D = webglOK() && !!window.THREE && !!window.PMBoard;
+  const wantFlat = reducedMotion || !supports3D || query.get("flat") === "1";
+  const compactViewport = window.matchMedia(
+    "(max-width: 880px), (max-height: 500px) and (max-width: 1000px)"
+  ).matches;
+  const coarsePointer = window.matchMedia("(pointer: coarse)").matches;
+  const coarseCompact = coarsePointer &&
+    Math.min(window.innerWidth, window.innerHeight) <= 880;
+  const mobile3D = !wantFlat && (compactViewport || coarseCompact);
 
   const loading = document.getElementById("loading");
   const scrollSpace = document.getElementById("scroll-space");
   const dossier = document.getElementById("dossier");
   const dossierBody = document.getElementById("dossier-body");
   const dossierClose = document.getElementById("dossier-close");
+  const dossierPaper = dossier.querySelector(".dossier-paper");
   const boardTooltip = document.getElementById("board-tooltip");
+  const boardHint = document.getElementById("board-hint");
   const tipline = document.getElementById("tipline");
+  const tiplineClose = document.getElementById("tipline-close");
+  let flatInitialized = false;
 
   function cardById(id) {
     return D.cards.find((c) => c.id === id);
@@ -89,6 +99,7 @@
       ${det.body.map((p) => `<p>${p}</p>`).join("")}
       ${linksHtml ? `<div class="dossier-links">${linksHtml}</div>` : ""}
     `;
+    dossierPaper.scrollTop = 0;
     dossier.classList.add("open");
     dossier.setAttribute("aria-hidden", "false");
     document.body.classList.add("dossier-open");
@@ -109,7 +120,56 @@
     dossierReturnFocus = null;
   }
 
+  function trapFocus(container, e) {
+    const focusable = Array.from(
+      container.querySelectorAll(
+        'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => el.offsetParent !== null);
+    if (!focusable.length) return;
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) {
+      e.preventDefault();
+      last.focus();
+    } else if (!e.shiftKey && document.activeElement === last) {
+      e.preventDefault();
+      first.focus();
+    }
+  }
+
+  let tiplineReturnFocus = null;
+
+  function openTipline(returnFocus) {
+    tiplineReturnFocus = returnFocus || (document.activeElement !== document.body ? document.activeElement : null);
+    tipline.classList.add("visible");
+    tipline.setAttribute("aria-hidden", "false");
+    tipline.setAttribute("role", "dialog");
+    tipline.setAttribute("aria-modal", "true");
+    tipline.setAttribute("aria-labelledby", "tipline-heading");
+    document.body.classList.add("tipline-open");
+    tipline.scrollTop = 0;
+    requestAnimationFrame(() => tiplineClose.focus({ preventScroll: true }));
+  }
+
+  function closeTipline() {
+    if (!tipline.classList.contains("visible") || !document.body.classList.contains("tipline-open")) return;
+    tipline.classList.remove("visible");
+    tipline.setAttribute("aria-hidden", "true");
+    tipline.removeAttribute("role");
+    tipline.removeAttribute("aria-modal");
+    tipline.removeAttribute("aria-labelledby");
+    document.body.classList.remove("tipline-open");
+    if (tiplineReturnFocus && tiplineReturnFocus.isConnected) {
+      tiplineReturnFocus.focus({ preventScroll: true });
+    } else {
+      tiplineClose.blur();
+    }
+    tiplineReturnFocus = null;
+  }
+
   dossierClose.addEventListener("click", closeDossier);
+  tiplineClose.addEventListener("click", closeTipline);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && dossier.classList.contains("open")) {
       e.preventDefault();
@@ -117,84 +177,133 @@
       return;
     }
 
+    if (e.key === "Escape" && document.body.classList.contains("tipline-open")) {
+      e.preventDefault();
+      closeTipline();
+      return;
+    }
+
     if (e.key === "Tab" && dossier.classList.contains("open")) {
-      const focusable = Array.from(
-        dossier.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
-      ).filter((el) => el.offsetParent !== null);
-      if (!focusable.length) return;
-      const first = focusable[0];
-      const last = focusable[focusable.length - 1];
-      if (e.shiftKey && document.activeElement === first) {
-        e.preventDefault();
-        last.focus();
-      } else if (!e.shiftKey && document.activeElement === last) {
-        e.preventDefault();
-        first.focus();
-      }
+      trapFocus(dossier, e);
+    } else if (e.key === "Tab" && document.body.classList.contains("tipline-open")) {
+      trapFocus(tipline, e);
     }
   });
 
   /* ---------------- 3D mode ---------------- */
 
-  function initBoard() {
+  function finishLoading() {
+    if (!loading || !loading.isConnected) return;
+    loading.classList.add("done");
+    setTimeout(() => {
+      if (loading.isConnected) loading.remove();
+    }, 900);
+  }
+
+  function setActiveRegion(regionId) {
+    document.querySelectorAll(".case-tabs [data-region]").forEach((link) => {
+      link.classList.toggle("active", link.dataset.region === regionId);
+    });
+  }
+
+  function fallbackToFlat(error) {
+    console.error("3D evidence board failed; opening text view instead.", error);
+    closeDossierExtra = null;
+    hideBoardTooltip();
+    document.body.classList.remove("mode-3d", "mode-mobile-3d", "dossier-open", "tipline-open");
+    tipline.classList.remove("visible");
+    initFlat();
+  }
+
+  async function initBoard() {
     document.body.classList.add("mode-3d");
+    if (mobile3D) document.body.classList.add("mode-mobile-3d");
 
-    /* preload images + fonts, then build */
-    const imgPaths = [...new Set(D.cards.filter((c) => c.img).map((c) => c.img))];
-    const imgPromises = imgPaths.map(
-      (p) =>
-        new Promise((res) => {
-          const im = new Image();
-          im.onload = () => res([p, im]);
-          im.onerror = () => res([p, null]);
-          im.src = p;
-        })
-    );
-    const fontPromises = [
-      '18px "Special Elite"', '18px "Caveat"', '18px "Courier Prime"',
-    ].map((f) => document.fonts.load(f));
+    try {
+      /* preload images + fonts, then build */
+      const imgPaths = [...new Set(D.cards.filter((c) => c.img).map((c) => c.img))];
+      const imgPromises = imgPaths.map(
+        (p) =>
+          new Promise((res) => {
+            const im = new Image();
+            im.onload = () => res([p, im]);
+            im.onerror = () => res([p, null]);
+            im.src = p;
+          })
+      );
+      const fontPromises = [
+        '18px "Special Elite"', '18px "Caveat"', '18px "Courier Prime"',
+      ].map((f) => document.fonts.load(f));
 
-    Promise.all([Promise.all(imgPromises), Promise.all(fontPromises).catch(() => {})]).then(
-      ([pairs]) => {
-        const images = Object.fromEntries(pairs);
-        const api = window.PMBoard.init({
-          canvas: document.getElementById("board-canvas"),
-          images,
-          onHoverChange: updateBoardTooltip,
-          onFocusChange(card) {
-            if (card) openDossier(card);
-          },
+      const [pairs] = await Promise.all([
+        Promise.all(imgPromises),
+        Promise.all(fontPromises).catch(() => []),
+      ]);
+      const images = Object.fromEntries(pairs);
+      let pendingTiplineTrigger = null;
+      const api = window.PMBoard.init({
+        canvas: document.getElementById("board-canvas"),
+        images,
+        viewMode: mobile3D ? "mobile-overview" : "desktop-scroll",
+        onHoverChange: mobile3D || coarsePointer ? null : updateBoardTooltip,
+        onFocusChange(card) {
+          if (!mobile3D && card) openDossier(card);
+        },
+        onFocusSettled(card) {
+          if (mobile3D && card) openDossier(card);
+        },
+        onOverviewSettled(regionId) {
+          if (mobile3D && regionId === "tipline" && pendingTiplineTrigger) {
+            const trigger = pendingTiplineTrigger;
+            pendingTiplineTrigger = null;
+            openTipline(trigger);
+          }
+        },
+      });
+
+      closeDossierExtra = () => api.unfocus();
+
+      if (mobile3D) {
+        scrollSpace.style.height = "0";
+        const caseTitle = document.querySelector(".case-title");
+        caseTitle.setAttribute("aria-label", "Show complete evidence board");
+
+        caseTitle.addEventListener("click", (e) => {
+          e.preventDefault();
+          pendingTiplineTrigger = null;
+          closeDossier();
+          closeTipline();
+          setActiveRegion(null);
+          api.showOverview();
         });
 
-        closeDossierExtra = () => api.unfocus();
+        document.querySelectorAll(".case-tabs [data-region]").forEach((link) => {
+          link.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeDossier();
+            closeTipline();
+            const regionId = link.dataset.region;
+            setActiveRegion(regionId);
+            if (regionId === "tipline") pendingTiplineTrigger = link;
+            else pendingTiplineTrigger = null;
+            api.showOverview(regionId);
+          });
+        });
 
+        if (boardHint) {
+          boardHint.setAttribute("aria-hidden", "false");
+          requestAnimationFrame(() => boardHint.classList.add("active"));
+          setTimeout(() => {
+            boardHint.classList.remove("active");
+            boardHint.setAttribute("aria-hidden", "true");
+          }, 5200);
+        }
+      } else {
         /* scroll → camera */
         const SPACE_VH = 7.2;
         scrollSpace.style.height = SPACE_VH * 100 + "vh";
 
-        function onScroll() {
-          const max = document.documentElement.scrollHeight - window.innerHeight;
-          const t = max > 0 ? window.scrollY / max : 0;
-          api.setScrollT(t);
-          /* tip line form appears near the bottom */
-          tipline.classList.toggle("visible", t > 0.88);
-          /* nav active state */
-          updateNav(t);
-        }
-        window.addEventListener("scroll", onScroll, { passive: true });
-
-        /* nav jumps */
         const TOP = 150 - 26, BOT = -160 + 22;
-        document.querySelectorAll("[data-region]").forEach((a) => {
-          a.addEventListener("click", (e) => {
-            e.preventDefault();
-            closeDossier();
-            const reg = D.regions.find((r) => r.id === a.dataset.region);
-            const t = (reg.y - TOP) / (BOT - TOP);
-            const max = document.documentElement.scrollHeight - window.innerHeight;
-            window.scrollTo({ top: t * max, behavior: "smooth" });
-          });
-        });
 
         function updateNav(t) {
           const camY = TOP + (BOT - TOP) * t;
@@ -208,17 +317,49 @@
           });
         }
 
+        function onScroll() {
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          const t = max > 0 ? window.scrollY / max : 0;
+          api.setScrollT(t);
+          const showTipline = t > 0.88;
+          tipline.classList.toggle("visible", showTipline);
+          tipline.setAttribute("aria-hidden", String(!showTipline));
+          updateNav(t);
+        }
+        window.addEventListener("scroll", onScroll, { passive: true });
+
+        /* nav jumps */
+        document.querySelectorAll("[data-region]").forEach((a) => {
+          a.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeDossier();
+            const reg = D.regions.find((r) => r.id === a.dataset.region);
+            const t = (reg.y - TOP) / (BOT - TOP);
+            const max = document.documentElement.scrollHeight - window.innerHeight;
+            window.scrollTo({ top: t * max, behavior: "smooth" });
+          });
+        });
+
         onScroll();
-        loading.classList.add("done");
-        setTimeout(() => loading.remove(), 900);
       }
-    );
+
+      finishLoading();
+    } catch (error) {
+      fallbackToFlat(error);
+    }
   }
 
   /* ---------------- flat mode ---------------- */
 
   function initFlat() {
+    if (flatInitialized) {
+      finishLoading();
+      return;
+    }
+    flatInitialized = true;
+    document.body.classList.remove("mode-3d", "mode-mobile-3d", "dossier-open", "tipline-open");
     document.body.classList.add("mode-flat");
+    scrollSpace.style.height = "0";
     const root = document.getElementById("flat-root");
 
     const typeLabel = {
@@ -315,8 +456,11 @@
 
     hideBoardTooltip();
     tipline.classList.add("visible");
-    loading.classList.add("done");
-    setTimeout(() => loading.remove(), 900);
+    tipline.setAttribute("aria-hidden", "false");
+    tipline.removeAttribute("role");
+    tipline.removeAttribute("aria-modal");
+    tipline.removeAttribute("aria-labelledby");
+    finishLoading();
   }
 
   /* ---------------- tip line form ---------------- */
@@ -382,7 +526,7 @@
     a.addEventListener("click", (e) => {
       e.preventDefault();
       const url = new URL(location.href);
-      if (wantFlat) url.searchParams.delete("flat");
+      if (document.body.classList.contains("mode-flat")) url.searchParams.delete("flat");
       else url.searchParams.set("flat", "1");
       location.href = url.toString();
     });
