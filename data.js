@@ -83,8 +83,8 @@ window.CASE_DATA = {
       pos: [15, 112],
       rot: 2.4,
       w: 15, h: 18,
-      img: "assets/LOGO.png",
-      caption: "subject — camera shy",
+      img: "assets/Princy_pic.jpg",
+      caption: "the subject — last known photo",
       pinColor: 0x2b4a73,
     },
     {
@@ -422,7 +422,7 @@ window.CASE_DATA = {
   threads: [
     { from: "gsu", to: "ra", label: "math + ML foundations" },
     { from: "gsu", to: "nutrigirl", label: "CS fundamentals, first build" },
-    { from: "ra", to: "sep", label: "sequence models → satellite time-series" },
+    { from: "ra", to: "sep", label: "sequence models → telemetry" },
     { from: "nutrigirl", to: "toolfinder", label: "pose CV → vision pipelines" },
     { from: "toolfinder", to: "veritas", label: "GPU inference → LLM routing" },
     { from: "sep", to: "bioinfo", label: "signal processing → sequence data" },

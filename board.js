@@ -307,29 +307,35 @@ window.PMBoard = (function () {
   }
 
   function tagTexture(label) {
-    const W = 340, H = 110;
+    const W = 640, H = 170;
     const c = makeCanvas(W, H);
     const x = c.getContext("2d");
     x.fillStyle = COL.kraft;
     x.beginPath();
-    x.moveTo(26, 0); x.lineTo(W, 0); x.lineTo(W, H); x.lineTo(26, H); x.lineTo(0, H / 2);
+    x.moveTo(46, 0); x.lineTo(W, 0); x.lineTo(W, H); x.lineTo(46, H); x.lineTo(0, H / 2);
     x.closePath();
     x.fill();
-    x.fillStyle = "rgba(60,40,20,0.25)";
-    x.beginPath(); x.arc(30, H / 2, 9, 0, 7); x.fill();
+    /* subtle paper shading so the tag reads as card, not sticker */
+    const sg = x.createLinearGradient(0, 0, 0, H);
+    sg.addColorStop(0, "rgba(255,245,220,0.16)");
+    sg.addColorStop(1, "rgba(60,40,20,0.14)");
+    x.fillStyle = sg;
+    x.fill();
+    x.fillStyle = "rgba(60,40,20,0.3)";
+    x.beginPath(); x.arc(52, H / 2, 15, 0, 7); x.fill();
     x.fillStyle = "#f4ecd9";
-    x.beginPath(); x.arc(30, H / 2, 5, 0, 7); x.fill();
-    x.fillStyle = "#33291d";
-    let fs = 42;
-    x.font = `${fs}px "Caveat", cursive`;
+    x.beginPath(); x.arc(52, H / 2, 8, 0, 7); x.fill();
+    x.fillStyle = "#241b10";
+    let fs = 78;
+    x.font = `600 ${fs}px "Caveat", cursive`;
     let w = x.measureText(label).width;
-    const maxW = W - 76;
+    const maxW = W - 130;
     if (w > maxW) {
-      fs = Math.max(24, Math.floor(fs * maxW / w));
-      x.font = `${fs}px "Caveat", cursive`;
+      fs = Math.max(34, Math.floor(fs * maxW / w));
+      x.font = `600 ${fs}px "Caveat", cursive`;
       w = x.measureText(label).width;
     }
-    x.fillText(label, 52 + (maxW - w) / 2, H / 2 + fs * 0.33);
+    x.fillText(label, 90 + (maxW - w) / 2, H / 2 + fs * 0.33);
     return tex(c);
   }
 
@@ -484,7 +490,7 @@ window.PMBoard = (function () {
       scene.add(tube);
 
       /* kraft tag at the midpoint naming what transferred */
-      const tw = 7.2, thh = 2.3;
+      const tw = 11.5, thh = 3.05;
       const tag = new THREE.Mesh(
         new THREE.PlaneGeometry(tw, thh),
         new THREE.MeshStandardMaterial({ map: tagTexture(th.label), roughness: 0.9, transparent: true })
