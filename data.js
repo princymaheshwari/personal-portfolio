@@ -106,7 +106,7 @@ window.CASE_DATA = {
       rot: 0.8,
       w: 30, h: 9,
       title: "THE TRAIL",
-      sub: "READ BOTTOM-UP · EARLIEST AT THE FLOOR · STRINGS = WHAT CARRIED FORWARD",
+      sub: "CASE HISTORY · EVERY CLUE LED TO THE NEXT",
     },
     {
       id: "bioinfo",

@@ -196,7 +196,7 @@ window.PMBoard = (function () {
       let w = x.measureText(card.title).width;
       x.fillText(card.title, (W - w) / 2, H * 0.5);
       x.fillStyle = COL.red;
-      setFittedFont(x, card.sub, H * 0.155, H * 0.125, W - S * 1.7, '"Special Elite", monospace');
+      setFittedFont(x, card.sub, H * 0.155, H * 0.09, W - S * 1.7, '"Special Elite", monospace');
       w = x.measureText(card.sub).width;
       x.fillText(card.sub, (W - w) / 2, H * 0.75);
       x.strokeStyle = COL.ink;
