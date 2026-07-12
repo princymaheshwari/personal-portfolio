@@ -416,7 +416,7 @@ body.mode-flat {
   font-family: var(--font-type);
   font-size: 0.78rem;
   letter-spacing: 0.25em;
-  color: var(--kraft);
+  color: var(--focus-ring);
   margin-bottom: 0.8rem;
 }
 .flat-hero h1 {
@@ -425,7 +425,22 @@ body.mode-flat {
   letter-spacing: 0.06em;
   margin-bottom: 1rem;
 }
-.flat-tagline { color: #e2dac5; font-size: 1rem; line-height: 1.65; max-width: 36rem; margin: 0 auto; }
+.flat-subject,
+.flat-role {
+  font-family: var(--font-type);
+  text-transform: uppercase;
+}
+.flat-subject {
+  color: var(--paper);
+  font-size: 0.9rem;
+  letter-spacing: 0.14em;
+  margin-bottom: 0.45rem;
+}
+.flat-role {
+  color: var(--focus-ring);
+  font-size: 0.84rem;
+  letter-spacing: 0.13em;
+}
 
 .flat-section {
   background: var(--paper);

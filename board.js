@@ -191,14 +191,38 @@ window.PMBoard = (function () {
 
     if (card.type === "banner") {
       paperBase(x, W, H, true);
-      x.fillStyle = COL.ink;
-      setFittedFont(x, card.title, H * 0.42, H * 0.34, W - S * 1.6, '"Special Elite", monospace');
-      let w = x.measureText(card.title).width;
-      x.fillText(card.title, (W - w) / 2, H * 0.5);
-      x.fillStyle = COL.red;
-      setFittedFont(x, card.sub, H * 0.155, H * 0.09, W - S * 1.7, '"Special Elite", monospace');
-      w = x.measureText(card.sub).width;
-      x.fillText(card.sub, (W - w) / 2, H * 0.75);
+      if (card.variant === "hero") {
+        const maxWidth = W - S * 1.7;
+
+        x.fillStyle = COL.red;
+        setFittedFont(x, D.meta.caseNo, H * 0.075, H * 0.058, maxWidth, '"Special Elite", monospace');
+        let w = x.measureText(D.meta.caseNo).width;
+        x.fillText(D.meta.caseNo, (W - w) / 2, H * 0.17);
+
+        x.fillStyle = COL.ink;
+        setFittedFont(x, card.title, H * 0.32, H * 0.26, maxWidth, '"Special Elite", monospace');
+        w = x.measureText(card.title).width;
+        x.fillText(card.title, (W - w) / 2, H * 0.49);
+
+        const subjectLine = `SUBJECT: ${D.meta.subjectName}`;
+        setFittedFont(x, subjectLine, H * 0.09, H * 0.068, maxWidth, '"Special Elite", monospace');
+        w = x.measureText(subjectLine).width;
+        x.fillText(subjectLine, (W - w) / 2, H * 0.7);
+
+        x.fillStyle = COL.red;
+        setFittedFont(x, D.meta.role, H * 0.078, H * 0.06, maxWidth, '"Special Elite", monospace');
+        w = x.measureText(D.meta.role).width;
+        x.fillText(D.meta.role, (W - w) / 2, H * 0.84);
+      } else {
+        x.fillStyle = COL.ink;
+        setFittedFont(x, card.title, H * 0.42, H * 0.34, W - S * 1.6, '"Special Elite", monospace');
+        let w = x.measureText(card.title).width;
+        x.fillText(card.title, (W - w) / 2, H * 0.5);
+        x.fillStyle = COL.red;
+        setFittedFont(x, card.sub, H * 0.155, H * 0.09, W - S * 1.7, '"Special Elite", monospace');
+        w = x.measureText(card.sub).width;
+        x.fillText(card.sub, (W - w) / 2, H * 0.75);
+      }
       x.strokeStyle = COL.ink;
       x.globalAlpha = 0.55;
       x.lineWidth = 2;

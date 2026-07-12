@@ -11,6 +11,8 @@ window.CASE_DATA = {
   meta: {
     caseNo: "CASE Nº 2026-PM",
     codename: "THE FAST LEARNER",
+    subjectName: "PRINCY MAHESHWARI",
+    role: "ML/AI ENGINEER & RESEARCHER",
     tagline:
       "Subject enters unfamiliar technical domains and ships working systems within hours. Range observed: heliophysics to bioinformatics. Motive: curiosity. Pattern: repeat offender.",
   },
@@ -29,11 +31,11 @@ window.CASE_DATA = {
       id: "banner",
       region: "subject",
       type: "banner",
+      variant: "hero",
       pos: [0, 136],
       rot: -0.4,
       w: 62, h: 13,
       title: "THE FAST LEARNER",
-      sub: "CASE Nº 2026-PM · STATUS: ACTIVE · JURISDICTION: EVERY DOMAIN AT ONCE",
     },
     {
       id: "profile",

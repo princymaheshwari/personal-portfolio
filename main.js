@@ -242,7 +242,8 @@
       <header class="flat-hero">
         <p class="flat-case">${D.meta.caseNo}</p>
         <h1>${D.meta.codename}</h1>
-        <p class="flat-tagline">${D.meta.tagline}</p>
+        <p class="flat-subject">SUBJECT: ${D.meta.subjectName}</p>
+        <p class="flat-role">${D.meta.role}</p>
       </header>
 
       <section class="flat-section" id="flat-subject">
