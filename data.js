@@ -148,7 +148,7 @@ window.CASE_DATA = {
       rot: 1.8,
       w: 19, h: 10.5,
       title: "VERITAS.DEV",
-      date: "HACKATHON · LLM SYSTEMS",
+      date: "NexHacks 2026 · LLM SYSTEMS",
       lines: [
         "GitHub App catching code—doc",
         "drift. 3-layer hybrid: AST",
@@ -174,7 +174,7 @@ window.CASE_DATA = {
       rot: -2.2,
       w: 19, h: 10.5,
       title: "TOOLFINDER",
-      date: "HACKATHON · COMPUTER VISION",
+      date: "HackIllinois 2026 · COMPUTER VISION",
       lines: [
         "Voice-driven object search in",
         "cluttered workspaces. YOLO +",
