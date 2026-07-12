@@ -8,901 +8,114 @@
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
-
     gtag('config', 'G-PYLR6PFQ8Y');
   </script>
 
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Portfolio / Princy Maheshwari</title>
+  <title>Case Nº 2026-PM — Princy Maheshwari</title>
+  <meta name="description"
+    content="Case file on Princy Maheshwari: a Computer Science student who enters unfamiliar technical domains — heliophysics to bioinformatics — and ships working systems within hours. Explore the 3D evidence board." />
 
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&family=Caveat:wght@500;600&display=swap"
+    rel="stylesheet" />
 
   <link rel="stylesheet" href="styles.css" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link href="https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/devicon.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <link rel="icon" href="assets/LOGO.png" type="image/x-icon">
+  <link rel="icon" href="assets/LOGO.png" type="image/png" />
 </head>
 
 <body>
-  <!-- Scroll Progress Bar -->
-  <div id="scroll-bar"
-    class="fixed right-6 top-1/2 transform -translate-y-1/2 h-64 w-1.5 bg-gray-700 rounded-full z-50 hidden sm:block">
-    <div id="scroll-indicator"
-      class="bg-[#1DCD9F] h-0 w-full rounded-full transition-all duration-300 ease-out shadow-md shadow-[#1DCD9F]">
-    </div>
-  </div>
-  <!-- Loading Animation -->
-  <div id="loading">
-    <div class="loading-text" id="name-loader">
-      <span data-text="P">P</span>
-      <span data-text="R">R</span>
-      <span data-text="I">I</span>
-      <span data-text="N">N</span>
-      <span data-text="C">C</span>
-      <span data-text="Y">Y</span>
-    </div>
+  <!-- loading -->
+  <div id="loading" aria-hidden="true">
+    <div class="loading-folder">OPENING CASE FILE…</div>
   </div>
 
-  <!-- Hero Section -->
-  <section
-    class="position-relative container-fluid min-vh-100 d-flex justify-content-center align-items-center text-white overflow-hidden"
-    style="background-color: #000000">
-    <!-- Hero Particle Background -->
-    <div id="particles-hero" class="position-absolute w-100 h-100 top-0 start-0" style="z-index: 0"></div>
+  <!-- 3D board -->
+  <canvas id="board-canvas" aria-label="3D evidence board — use the flat file link for a text version"></canvas>
+  <div id="scroll-space"></div>
 
-    <!-- Hero Content -->
-    <div class="container text-center position-relative" style="z-index: 1">
-      <h1 class="display-4 fw-bold">
-        <span class="text-white me-2">Hi, I'm</span>
-        <button class="button" data-text="Princy Maheshwari">
-          <span class="actual-text">&nbsp;Princy Maheshwari&nbsp;</span>
-          <span aria-hidden="true" class="hover-text">&nbsp;Princy Maheshwari&nbsp;</span>
+  <!-- case tabs -->
+  <nav class="casebar" aria-label="Case sections">
+    <a class="case-title" href="#" data-region="subject"><b>CASE Nº 2026-PM</b> · THE FAST LEARNER</a>
+    <div class="case-tabs">
+      <a href="#" data-region="subject">SUBJECT</a>
+      <a href="#" data-region="trail">THE TRAIL</a>
+      <a href="#" data-region="evidence">EVIDENCE</a>
+      <a href="#" data-region="mo">M.O.</a>
+      <a href="#" data-region="tipline">TIP LINE</a>
+      <a href="#" class="mode-switch" title="Accessible text version">FLAT FILE</a>
+    </div>
+  </nav>
+
+  <!-- dossier detail panel -->
+  <aside id="dossier" aria-live="polite">
+    <div class="dossier-paper">
+      <button id="dossier-close" aria-label="Close file">CLOSE FILE ✕</button>
+      <div id="dossier-body"></div>
+    </div>
+  </aside>
+
+  <!-- flat fallback (mobile / reduced motion / no WebGL) -->
+  <main id="flat-root"></main>
+
+  <!-- tip line -->
+  <section id="tipline" aria-label="Contact">
+    <div class="tip-paper">
+      <p class="tip-head">☎ TIP LINE</p>
+      <p class="tip-sub">Seen the subject? Want to hire her? Leave a statement — replies within 48 hours. Atlanta, GA.</p>
+      <form id="contactForm" novalidate>
+        <div class="form-row">
+          <div class="field">
+            <label for="firstName">First name *</label>
+            <input type="text" id="firstName" name="firstName" required autocomplete="given-name" placeholder="Jane" />
+          </div>
+          <div class="field">
+            <label for="lastName">Last name *</label>
+            <input type="text" id="lastName" name="lastName" required autocomplete="family-name" placeholder="Doe" />
+          </div>
+        </div>
+        <div class="field">
+          <label for="email">Email *</label>
+          <input type="email" id="email" name="email" required autocomplete="email" placeholder="you@example.com" />
+        </div>
+        <div class="field">
+          <label for="subject">Nature of tip *</label>
+          <select id="subject" name="subject" required>
+            <option value="">Select…</option>
+            <option value="job-opportunity">Job opportunity</option>
+            <option value="project-inquiry">Project inquiry</option>
+            <option value="collaboration">Research collaboration</option>
+            <option value="general">General sighting</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="message">Statement *</label>
+          <textarea id="message" name="message" rows="4" required
+            placeholder="Describe what you saw, or what you'd like to build…"></textarea>
+        </div>
+        <input type="hidden" name="_subject" value="New message from Princy Maheshwari Portfolio!" />
+        <input type="hidden" name="site" value="Princy Maheshwari Portfolio" />
+        <button type="submit" class="stamp-btn" id="submitBtn">
+          <span id="submitText">FILE THE TIP</span>
+          <span id="submitLoading" class="hidden">TRANSMITTING…</span>
         </button>
-      </h1>
-      <p class="lead text-light mt-3">
-        Computer Science student building ML systems at the intersection of inference, agentic AI, and quantitative
-        domains. Experienced in FastAPI backends, PyTorch and TensorFlow model development, and LangGraph-based
-        agentic architectures—from end-to-end RAG pipelines to GPU-accelerated inference orchestration. Strong
-        foundation in statistical modeling and signal processing, with hands-on experience in data pipeline
-        engineering for large-scale scientific datasets.
-      </p>
-      <a href="#projects" class="shadow__btn mt-4">View Projects</a>
+        <p id="formMessage" class="form-message hidden" role="status"></p>
+      </form>
     </div>
   </section>
 
-  <!-- About Me Section -->
-  <section id="about" class="bg-black text-white py-20 px-6 relative overflow-hidden">
-    <!-- PARTICLES BACKGROUND -->
-    <div id="particles-about" class="absolute top-0 left-0 w-full h-full z-0"></div>
-
-    <div
-      class="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-center text-center md:text-left gap-10 px-4 relative z-10">
-
-      <!-- Text Content -->
-      <div class="max-w-2xl" id="about-text">
-        <h2 class="text-3xl md:text-4xl font-semibold leading-snug mb-4">
-          I'm <span class="text-[#1DCD9F] font-bold">Princy Maheshwari</span>, a
-          Computer Science student building ML systems, backend infrastructure, and data
-          pipelines for inference and quantitative problem-solving.
-        </h2>
-
-        <p class="text-gray-300 text-lg leading-relaxed mb-6">
-          I'm pursuing a B.S. in Computer Science at Georgia State University with a focus on
-          full-stack engineering—combining backend development, machine learning, and systems
-          design to build reliable, scalable applications.
-        </p>
-
-        <p class="text-gray-300 text-lg leading-relaxed mb-6">
-          My experience spans the entire stack: FastAPI backends, PostgreSQL and MongoDB
-          databases, PyTorch and TensorFlow model development, data pipeline engineering, RAG
-          systems, and LangGraph agentic architectures. I've worked on everything from real-time
-          inference orchestration on Modal to building multi-layer data processing systems that
-          handle messy scientific datasets at scale.
-        </p>
-
-        <p class="text-gray-300 text-lg leading-relaxed mb-6">
-          I'm interested in problems that require thoughtful engineering across layers—where
-          backend architecture, ML model design, and infrastructure decisions all matter. That
-          includes deep-tech and quantitative domains, but I'm equally engaged in building
-          systems that work: reliable APIs, efficient data pipelines, production-grade model
-          serving, and the infrastructure that makes it all reliable.
-        </p>
-
-        <p class="text-gray-300 text-lg leading-relaxed mb-6">
-          I believe the best engineers understand both breadth and depth—knowing how systems fit
-          together while developing genuine expertise in specific areas. That's what drives my
-          work.
-        </p>
-
-        <!-- Social Icons -->
-        <ul class="example-2">
-          <li class="icon-content">
-            <a href="https://www.linkedin.com/in/princy-maheshwari1/" aria-label="LinkedIn" data-social="linkedin"
-              target="_blank">
-              <div class="filled"></div>
-              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="480" height="480" viewBox="0 0 48 48">
-                <path fill="#0288d1" d="M24 4A20 20 0 1 0 24 44A20 20 0 1 0 24 4Z"></path>
-                <path fill="#fff"
-                  d="M14 19H18V34H14zM15.988 17h-.022C14.772 17 14 16.11 14 14.999 14 13.864 14.796 13 16.011 13c1.217 0 1.966.864 1.989 1.999C18 16.11 17.228 17 15.988 17zM35 24.5c0-3.038-2.462-5.5-5.5-5.5-1.862 0-3.505.928-4.5 2.344V19h-4v15h4v-8c0-1.657 1.343-3 3-3s3 1.343 3 3v8h4C35 34 35 24.921 35 24.5z">
-                </path>
-              </svg>
-            </a>
-            <div class="tooltip">LinkedIn</div>
-          </li>
-          <li class="icon-content">
-            <a href="https://github.com/princymaheshwari" aria-label="GitHub" data-social="github" target="_blank">
-              <div class="filled"></div>
-              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="240" height="240" viewBox="0 0 48 48">
-                <circle cx="28" cy="28" r="18" fill="#9fa8da"></circle>
-                <path fill="none" stroke="#18193f" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                  d="M35.054,38.836	C31.97,41.137,28.144,42.5,24,42.5C13.783,42.5,5.5,34.217,5.5,24c0-2.917,0.675-5.676,1.878-8.13">
-                </path>
-                <path fill="none" stroke="#18193f" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"
-                  d="M13.869,8.518	C16.779,6.61,20.26,5.5,24,5.5c10.217,0,18.5,8.283,18.5,18.5c0,2.941-0.686,5.721-1.907,8.19">
-                </path>
-                <path fill="#18193f"
-                  d="M34,23c0-1.574-0.576-3.038-1.558-4.275c0.442-1.368,0.93-3.771-0.242-5.648	c-2.251,0-3.73,1.545-4.436,2.514C26.602,15.213,25.333,15,24,15s-2.602,0.213-3.764,0.591c-0.706-0.969-2.184-2.514-4.436-2.514	c-1.328,2.126-0.526,4.45-0.073,5.43C14.638,19.788,14,21.334,14,23c0,3.78,3.281,6.94,7.686,7.776	c-1.309,0.673-2.287,1.896-2.587,3.38h-1.315c-1.297,0-1.801-0.526-2.502-1.415c-0.692-0.889-1.437-1.488-2.331-1.736	c-0.482-0.051-0.806,0.316-0.386,0.641c1.419,0.966,1.516,2.548,2.085,3.583C15.168,36.161,16.229,37,17.429,37H19v5.942h10v-7.806	c0-1.908-1.098-3.544-2.686-4.36C30.719,29.94,34,26.78,34,23z">
-                </path>
-              </svg>
-            </a>
-            <div class="tooltip">GitHub</div>
-          </li>
-        </ul>
-
-      </div>
-    </div>
-  </section>
-  <!-- JOURNEY SECTION -->
-  <section id="journey" class="bg-black text-white py-20 px-6 relative overflow-hidden">
-    <!-- PARTICLES BACKGROUND -->
-    <div id="particles-journey" class="absolute top-0 left-0 w-full h-full z-0"></div>
-
-    <div class="max-w-6xl mx-auto relative z-10">
-      <h2 class="text-4xl font-bold mb-16 text-center text-[#1DCD9F]">My Journey</h2>
-
-      <div class="relative">
-        <!-- Vertical Line -->
-        <div class="hidden md:block absolute left-1/2 transform -translate-x-1/2 h-full w-1 bg-[#1DCD9F]"></div>
-
-        <!-- Timeline Card 1 (Undergraduate Research Assistant) - Right -->
-        <div class="relative mb-16 md:mb-24 md:flex justify-end">
-          <div
-            class="hidden md:block absolute w-4 h-4 bg-[#1DCD9F] rounded-full left-1/2 transform -translate-x-1/2 top-4 z-10">
-          </div>
-          <div class="md:w-1/2"></div>
-          <div class="md:w-1/2 md:pl-10">
-            <div class="bg-[#111] p-6 rounded-2xl border border-[#1DCD9F] shadow-lg journey-card">
-              <h3 class="text-xl font-semibold text-[#1DCD9F]">Undergraduate Research Assistant – Department of Computer
-                Science, GSU</h3>
-              <span class="text-sm text-gray-400">Aug 2025 – Present | Advisor: Prof. Hemanth Venkateswara</span>
-              <p class="mt-2 text-gray-300">Exploring deep learning architectures for zero-shot and weak supervision
-                methods. Building neural network models using TensorFlow and NumPy, with hands-on work in CNN-based
-                spatial data processing and RNN-based sequence modeling. Focused on scalable learning workflows that
-                generalize with minimal labeled data.</p>
-            </div>
-          </div>
-        </div>
-
-        <!-- Timeline Card 2 (Math Path / data mining) - Left -->
-        <div class="relative mb-16 md:mb-24 md:flex justify-start">
-          <div
-            class="hidden md:block absolute w-4 h-4 bg-[#1DCD9F] rounded-full left-1/2 transform -translate-x-1/2 top-4 z-10">
-          </div>
-          <div class="md:w-1/2 md:pr-10">
-            <div class="bg-[#111] p-6 rounded-2xl border border-[#1DCD9F] shadow-lg journey-card">
-              <h3 class="text-xl font-semibold text-[#1DCD9F]">Math Path Research Scholar – Data Mining Lab, GSU</h3>
-              <span class="text-sm text-gray-400">Oct 2025 – May 2026 | Advisor: Prof. Berkay Aydin</span>
-              <p class="mt-2 text-gray-300">Built an end-to-end data pipeline to detect solar energetic particle events from 30 years of satellite data across multiple missions. Engineered data normalization layers, implemented detection algorithms with 100% recall and 92.4% precision, and debugged critical inconsistencies in NASA's legacy datasets. The work bridges data engineering, signal processing, and domain expertise—turning raw telemetry into actionable scientific insights.</p>
-            </div>
-          </div>
-          <div class="md:w-1/2"></div>
-        </div>
-
-        <!-- Timeline Card 3 (Education) - Right -->
-        <div class="relative mb-16 md:mb-24 md:flex justify-end">
-          <div
-            class="hidden md:block absolute w-4 h-4 bg-[#1DCD9F] rounded-full left-1/2 transform -translate-x-1/2 top-4 z-10">
-          </div>
-          <div class="md:w-1/2"></div>
-          <div class="md:w-1/2 md:pl-10">
-            <div class="bg-[#111] p-6 rounded-2xl border border-[#1DCD9F] shadow-lg journey-card">
-              <h3 class="text-xl font-semibold text-[#1DCD9F]">B.S. in Computer Science – Georgia State University</h3>
-              <span class="text-sm text-gray-400">Aug 2025 – May 2029 | GPA: 4.25/4.3</span>
-              <p class="mt-2 text-gray-300">Presidential Scholar on a full-ride merit scholarship. Focused on computer science, machine learning, mathematics, and research-driven
-                AI systems for scientific and quantitative domains.</p>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- TECH STACK SECTION -->
-  <section id="tech-stack" class="bg-black text-white py-20 px-6 relative overflow-hidden">
-    <!-- MATRIX RAIN BACKGROUND -->
-    <canvas id="matrix-rain" class="absolute top-0 left-0 w-full h-full z-0"></canvas>
-
-    <div class="max-w-7xl mx-auto flex flex-col gap-20 relative z-10">
-      <!-- FRONTEND -->
-      <div class="flex md:flex-row flex-col gap-8 items-start" id="frontend">
-        <!-- Label -->
-        <div class="w-full md:w-1/5 text-gray-400 text-lg font-bold sticky top-18">
-          <div class="category-label cursor-pointer hover:text-white transition"
-            onclick="document.querySelector('#frontend').scrollIntoView({behavior: 'smooth'})">FRONTEND</div>
-        </div>
-
-        <!-- Tech Grid -->
-        <div class="w-full md:w-4/5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 reveal-section">
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/javascript/javascript-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">JavaScript</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/typescript/typescript-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">TypeScript</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">React</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/html5/html5-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">HTML</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/css3/css3-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">CSS</span></div>
-          <div class="flex items-center gap-2">
-            <img src="https://cdn.jsdelivr.net/gh/devicons/devicon@latest/icons/tailwindcss/tailwindcss-original.svg"
-              class="w-6 h-6" alt="" />
-            <span class="text-lg">Tailwind CSS</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- BACKEND -->
-      <div class="flex md:flex-row flex-col gap-8 items-start" id="backend">
-        <div class="w-full md:w-1/5 text-gray-400 text-lg font-bold sticky top-18">
-          <div class="category-label cursor-pointer hover:text-white transition"
-            onclick="document.querySelector('#backend').scrollIntoView({behavior: 'smooth'})">BACKEND</div>
-        </div>
-        <div class="w-full md:w-4/5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 reveal-section">
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">Python</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">FastAPI</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">Node.js</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/express/express-original.svg"
-              class="w-6 h-6 bg-white rounded p-0.5" alt=""><span class="text-lg">Express.js</span></div>
-        </div>
-      </div>
-
-      <!-- DATABASE -->
-      <div class="flex md:flex-row flex-col gap-8 items-start" id="database">
-        <div class="w-full md:w-1/5 text-gray-400 text-lg font-bold sticky top-18">
-          <div class="category-label cursor-pointer hover:text-white transition"
-            onclick="document.querySelector('#database').scrollIntoView({behavior: 'smooth'})">DATABASE</div>
-        </div>
-        <div class="w-full md:w-4/5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 reveal-section">
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/mongodb/mongodb-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">MongoDB</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/postgresql/postgresql-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">PostgreSQL</span></div>
-        </div>
-      </div>
-
-      <!-- ML / AI -->
-      <div class="flex md:flex-row flex-col gap-8 items-start" id="ml-ai">
-        <div class="w-full md:w-1/5 text-gray-400 text-lg font-bold sticky top-18">
-          <div class="category-label cursor-pointer hover:text-white transition"
-            onclick="document.querySelector('#ml-ai').scrollIntoView({behavior: 'smooth'})">ML / AI</div>
-        </div>
-        <div class="w-full md:w-4/5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 reveal-section">
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">PyTorch</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/tensorflow/tensorflow-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">TensorFlow</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.simpleicons.org/langchain/1DCD9F" class="w-6 h-6" alt=""
-              title="LangGraph (LangChain ecosystem)"><span class="text-lg">LangGraph</span></div>
-          <div class="flex items-center gap-2"><img src="https://cdn.simpleicons.org/anthropic/D97757"
-              class="w-6 h-6" alt=""><span class="text-lg">Anthropic SDK</span></div>
-          <div class="flex items-center gap-2"><img src="https://cdn.simpleicons.org/huggingface/FFD21E"
-              class="w-6 h-6" alt=""><span class="text-lg">Hugging Face</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/scikitlearn/scikitlearn-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">Scikit-learn</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">NumPy</span></div>
-        </div>
-      </div>
-
-      <!-- TOOLS -->
-      <div class="flex md:flex-row flex-col gap-8 items-start" id="tools">
-        <div class="w-full md:w-1/5 text-gray-400 text-lg font-bold sticky top-18">
-          <div class="category-label cursor-pointer hover:text-white transition"
-            onclick="document.querySelector('#tools').scrollIntoView({behavior: 'smooth'})">TOOLS</div>
-        </div>
-        <div class="w-full md:w-4/5 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-6 reveal-section">
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">Docker</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">Git</span></div>
-          <div class="flex items-center gap-2"><img src="./assets/modal.svg" class="w-6 h-6"
-              alt=""><span class="text-lg">Modal</span></div>
-          <div class="flex items-center gap-2"><img
-              src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/supabase/supabase-original.svg"
-              class="w-6 h-6" alt=""><span class="text-lg">Supabase</span></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- GITHUB ACTIVITY SECTION -->
-  <section id="github-activity" class="bg-[#0f0f0f] text-white py-20 px-6">
-    <div class="max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl font-bold mb-4">GitHub Activity</h2>
-        <p class="text-gray-400 text-lg">My latest contributions and coding activity.</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-        <!-- GitHub Stats Cards -->
-        <div
-          class="github-stat-card bg-[#111] p-6 rounded-2xl text-center border border-gray-800 hover:border-[#1DCD9F] transition-all duration-300">
-          <div class="text-3xl font-bold text-[#1DCD9F] mb-2" id="githubRepos">-</div>
-          <div class="text-gray-400">Public Repositories</div>
-        </div>
-
-        <div
-          class="github-stat-card bg-[#111] p-6 rounded-2xl text-center border border-gray-800 hover:border-[#1DCD9F] transition-all duration-300">
-          <div class="text-3xl font-bold text-[#1DCD9F] mb-2" id="githubStars">-</div>
-          <div class="text-gray-400">Total Stars</div>
-        </div>
-
-        <div
-          class="github-stat-card bg-[#111] p-6 rounded-2xl text-center border border-gray-800 hover:border-[#1DCD9F] transition-all duration-300">
-          <div class="text-3xl font-bold text-[#1DCD9F] mb-2" id="githubFollowers">-</div>
-          <div class="text-gray-400">Followers</div>
-        </div>
-
-        <div
-          class="github-stat-card bg-[#111] p-6 rounded-2xl text-center border border-gray-800 hover:border-[#1DCD9F] transition-all duration-300">
-          <div class="text-3xl font-bold text-[#1DCD9F] mb-2" id="githubCommits">-</div>
-          <div class="text-gray-400">Recent Commits</div>
-        </div>
-      </div>
-
-      <!-- GitHub Activity Feed -->
-      <div class="bg-[#111] rounded-2xl p-6 border border-gray-800">
-        <div class="flex items-center justify-between mb-6">
-          <h3 class="text-xl font-semibold text-[#1DCD9F]">Recent Activity</h3>
-          <a href="https://github.com/princymaheshwari" target="_blank"
-            class="text-[#1DCD9F] hover:text-[#17b890] transition-colors">
-            View Profile <i class="fas fa-external-link-alt ml-1"></i>
-          </a>
-        </div>
-
-        <div id="githubActivity" class="space-y-4">
-          <!-- Activity items will be loaded here -->
-          <div class="flex items-center justify-center py-8">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-[#1DCD9F]"></div>
-            <span class="ml-3 text-gray-400">Loading activity...</span>
-          </div>
-        </div>
-      </div>
-
-      <!-- Top Languages -->
-      <div class="mt-12">
-        <h3 class="text-xl font-semibold text-[#1DCD9F] mb-6 text-center">Most Used Languages</h3>
-        <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6" id="githubLanguages">
-          <!-- Language cards will be loaded here -->
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-
-  <!-- UPCOMING PROJECTS SECTION -->
-
-  <!-- PROJECTS SECTION -->
-  <section id="projects" class="relative bg-black text-white py-20 px-6 overflow-hidden">
-
-    <!-- PARTICLES BACKGROUND -->
-    <div id="particles-projects" class="absolute top-0 left-0 w-full h-full z-0"></div>
-
-    <!-- ACTUAL PROJECT CONTENT -->
-    <div class="relative z-10">
-      <div class="max-w-6xl mx-auto text-center mb-12">
-        <h2 class="text-4xl font-bold mb-4">Projects</h2>
-        <p class="text-gray-300 text-lg">Some of the things I've built.</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-10 max-w-6xl mx-auto">
-
-        <!-- PROJECT 1: ToolFinder -->
-        <div
-          class="project-card bg-white text-black shadow-xl rounded-2xl overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-          <img src="./assets/toolfinder.png" alt="ToolFinder project screenshot"
-            class="w-full h-60 object-cover" />
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">ToolFinder</h3>
-            <p class="text-gray-700 mb-4">
-              A multimodal AI system enabling voice-driven object search in cluttered workspaces. Designed a
-              GPU-accelerated inference pipeline on Modal orchestrating speech transcription, semantic query mapping,
-              and parallel vision models (YOLO custom detection + SAM2 segmentation). Achieved 87% mAP@50 with 88.4%
-              precision and 82.6% recall, returning pixel-precise masks and spatial coordinates for real-time object
-              highlighting.
-            </p>
-            <div class="flex flex-wrap gap-3 mb-4">
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt=""
-                  class="w-4 h-4" />
-                Python
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pytorch/pytorch-original.svg" alt=""
-                  class="w-4 h-4" />
-                PyTorch
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">YOLO</span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">SAM2</span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="./assets/modal.svg" alt="" class="w-4 h-4" />
-                Modal
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" alt=""
-                  class="w-4 h-4" />
-                FastAPI
-              </span>
-            </div>
-            <div class="flex">
-              <a href="https://devpost.com/software/the-byte-la016n" target="_blank" rel="noopener noreferrer"
-                class="bg-[#1DCD9F] text-white px-4 py-2 rounded hover:bg-[#17b890] transition-all text-sm inline-block">
-                View Project
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- PROJECT 2: Veritas.dev -->
-        <div
-          class="project-card bg-white text-black shadow-xl rounded-2xl overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-          <img src="./assets/Veritas.png" alt="Veritas.dev project screenshot"
-            class="w-full h-60 object-cover" />
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">Veritas.dev</h3>
-            <p class="text-gray-700 mb-4">
-              An AI-powered GitHub App that automatically detects when code changes don't match documentation. Built a
-              3-layer hybrid system with multi-language code parsing (Python AST, JavaScript/TypeScript regex), semantic
-              routing via embeddings, and LLM comparison logic. Implemented adaptive routing that reduced LLM cost by 88%
-              while maintaining 92% accuracy. Creates automated GitHub issues to keep docs and code in sync.
-            </p>
-            <div class="flex flex-wrap gap-3 mb-4">
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/fastapi/fastapi-original.svg" alt=""
-                  class="w-4 h-4" />
-                FastAPI
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt=""
-                  class="w-4 h-4" />
-                Python
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/google/google-original.svg" alt=""
-                  class="w-4 h-4" />
-                Gemini 2.5 Flash
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">Sentence Transformers</span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg" alt=""
-                  class="w-4 h-4 invert" />
-                GitHub API
-              </span>
-            </div>
-            <div class="flex">
-              <a href="https://devpost.com/software/kmfo" target="_blank" rel="noopener noreferrer"
-                class="bg-[#1DCD9F] text-white px-4 py-2 rounded hover:bg-[#17b890] transition-all text-sm inline-block">
-                View Project
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- PROJECT 3: SEP Detection Pipeline -->
-        <div
-          class="project-card bg-white text-black shadow-xl rounded-2xl overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-          <img src="./assets/sep_pipeline.png" alt="SEP detection pipeline project screenshot"
-            class="w-full h-60 object-cover" />
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">SEP Detection Pipeline</h3>
-            <p class="text-gray-700 mb-4">
-              A production data pipeline for detecting Solar Energetic Particle events from 30 years of multi-source
-              satellite data (GOES, SOHO). Engineered instrument-specific adapters, satellite-year fallback logic, and
-              dynamic version discovery across 60+ monthly files. Built Python-based data normalization deriving
-              integral proton flux across 3 GOES generations. Achieved 100% recall (159/159 validated events) and 92.4%
-              precision through rigorous algorithm tuning and ground-truth artifact debugging.
-            </p>
-            <div class="flex flex-wrap gap-3 mb-4">
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/python/python-original.svg" alt=""
-                  class="w-4 h-4" />
-                Python
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/numpy/numpy-original.svg" alt=""
-                  class="w-4 h-4" />
-                NumPy
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/pandas/pandas-original.svg" alt=""
-                  class="w-4 h-4" />
-                Pandas
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">Data Pipeline Engineering</span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">Signal Processing</span>
-            </div>
-            <div class="flex">
-              <a href="https://github.com/princymaheshwari/solar-energetic-particle-event-detection-pipeline#1-objective" target="_blank" rel="noopener noreferrer"
-                class="bg-[#1DCD9F] text-white px-4 py-2 rounded hover:bg-[#17b890] transition-all text-sm inline-block">
-                View Project
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- PROJECT 4: NutriGirl AI -->
-        <div
-          class="project-card bg-white text-black shadow-xl rounded-2xl overflow-hidden transform hover:scale-[1.02] transition-all duration-300">
-          <img src="./assets/nutrigirl_ai.png" alt="NutriGirl AI project screenshot"
-            class="w-full h-60 object-cover" />
-          <div class="p-6">
-            <h3 class="text-2xl font-semibold mb-2">NutriGirl AI</h3>
-            <p class="text-gray-700 mb-4">
-              2nd Overall, 2nd Health Track at HackHer GSU 2025. An AI-powered platform combining lab report interpretation,
-              nutrition tracking, and pose-aware workout coaching for women managing PCOS/PCOD. Led backend and computer
-              vision development, building a smart lab analyzer for blood report summaries and a GPT-Vision–based pose
-              detection system using Google MediaPipe for real-time form correction. Integrated OpenAI APIs, Web Speech
-              API, and Node.js/Express.js to enable voice-guided feedback and a 24/7 PCOS-specific chatbot.
-            </p>
-            <div class="flex flex-wrap gap-3 mb-4">
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/nodejs/nodejs-original.svg" alt=""
-                  class="w-4 h-4" />
-                Node.js/Express.js
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img
-                  src="https://raw.githubusercontent.com/gilbarbara/logos/92bb74e98bca1ea1ad794442676ebc4e75038adc/logos/openai-icon.svg"
-                  alt="" class="w-4 h-4" />
-                OpenAI GPT-4
-              </span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">Google MediaPipe</span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded">VAPI.ai</span>
-              <span class="flex items-center gap-1 bg-gray-100 px-2 py-1 text-xs rounded cursor-pointer">
-                <img src="https://cdn.jsdelivr.net/gh/devicons/devicon/icons/react/react-original.svg" alt=""
-                  class="w-4 h-4" />
-                React
-              </span>
-            </div>
-            <div class="flex">
-              <a href="https://devpost.com/software/nutrigirl-ai" target="_blank" rel="noopener noreferrer"
-                class="bg-[#1DCD9F] text-white px-4 py-2 rounded hover:bg-[#17b890] transition-all text-sm inline-block">
-                View Project
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <!-- /SINGLE PROJECT CARD -->
-      </div>
-    </div>
-  </section>
-
-
-
-  <!-- RELEVANT COURSEWORK -->
-  <section id="relevant-coursework" class="relative bg-black text-white py-20 px-6 overflow-hidden">
-    <div id="particles-coursework" class="absolute top-0 left-0 w-full h-full z-0"></div>
-    <div class="relative z-10 max-w-6xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl font-bold mb-4">Relevant Coursework</h2>
-      </div>
-
-      <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-6">
-        <div
-          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
-          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
-            Code Path AI110 – Foundations of AI Engineering
-          </h3>
-        </div>
-        <div
-          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
-          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
-            CSC 1301 &amp; 1302 – Principles of Computer Science I &amp; II
-          </h3>
-        </div>
-        <div
-          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
-          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
-            Calculus I &amp; II
-          </h3>
-        </div>
-        <div
-          class="coursework-card bg-[#111] border border-[#1DCD9F]/40 rounded-2xl p-8 flex items-center justify-center min-h-[140px] hover:border-[#1DCD9F] transition-colors duration-300">
-          <h3 class="text-lg md:text-xl font-semibold text-[#1DCD9F] text-center leading-snug">
-            Discrete Mathematics
-          </h3>
-        </div>
-      </div>
-    </div>
-  </section>
-
-
-
-  <!-- CONTACT FORM SECTION -->
-  <section id="contact-form" class="bg-[#0f0f0f] text-white py-20 px-6">
-    <div class="max-w-4xl mx-auto">
-      <div class="text-center mb-12">
-        <h2 class="text-4xl font-bold mb-4">Get In Touch</h2>
-        <p class="text-gray-400 text-lg">Let's discuss your next project or just say hello!</p>
-      </div>
-
-      <div class="grid md:grid-cols-2 gap-10">
-        <!-- Contact Info -->
-        <div class="space-y-6">
-          <div>
-            <h3 class="text-2xl font-semibold mb-4 text-[#1DCD9F]">Let's Connect</h3>
-            <p class="text-gray-300 mb-6">I'm always open to discussing new opportunities, interesting projects, or just
-              having a chat about technology and development.</p>
-          </div>
-
-          <div class="space-y-4">
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-[#1DCD9F] rounded-full flex items-center justify-center">
-                <i class="fas fa-paper-plane text-white"></i>
-              </div>
-              <div>
-                <p class="text-sm text-gray-400">Message me</p>
-                <p class="text-white">Use the secure form on the right — I usually reply within 48 hours.</p>
-              </div>
-            </div>
-
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-[#1DCD9F] rounded-full flex items-center justify-center">
-                <i class="fas fa-map-marker-alt text-white"></i>
-              </div>
-              <div>
-                <p class="text-sm text-gray-400">Location</p>
-                <p class="text-white">Atlanta, Georgia</p>
-              </div>
-            </div>
-
-            <div class="flex items-center space-x-3">
-              <div class="w-10 h-10 bg-[#1DCD9F] rounded-full flex items-center justify-center">
-                <i class="fas fa-clock text-white"></i>
-              </div>
-              <div>
-                <p class="text-sm text-gray-400">Response Time</p>
-                <p class="text-white">Within 48 hours</p>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Contact Form -->
-        <div class="bg-white text-black rounded-2xl p-8 shadow-xl">
-          <form id="contactForm" class="space-y-6">
-            <div class="grid md:grid-cols-2 gap-4">
-              <div>
-                <label for="firstName" class="block text-sm font-medium mb-2">First Name <span
-                    style="color: red">*</span></label>
-                <input type="text" id="firstName" name="firstName" required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1DCD9F] focus:border-transparent transition-all"
-                  placeholder="Princy">
-              </div>
-              <div>
-                <label for="lastName" class="block text-sm font-medium mb-2">Last Name <span
-                    style="color: red">*</span></label>
-                <input type="text" id="lastName" name="lastName" required
-                  class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1DCD9F] focus:border-transparent transition-all"
-                  placeholder="Maheshwari">
-              </div>
-            </div>
-
-            <div>
-              <label for="email" class="block text-sm font-medium mb-2">Email <span style="color: red">*</span></label>
-              <input type="email" id="email" name="email" required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1DCD9F] focus:border-transparent transition-all"
-                placeholder="you@example.com">
-            </div>
-
-            <div>
-              <label for="subject" class="block text-sm font-medium mb-2">Subject <span
-                  style="color: red">*</span></label>
-              <select id="subject" name="subject" required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1DCD9F] focus:border-transparent transition-all">
-                <option value="">Select a subject</option>
-                <option value="project-inquiry">Project Inquiry</option>
-                <option value="job-opportunity">Job Opportunity</option>
-                <option value="collaboration">Collaboration</option>
-                <option value="general">General Message</option>
-              </select>
-            </div>
-
-            <div>
-              <label for="message" class="block text-sm font-medium mb-2">Message <span
-                  style="color: red">*</span></label>
-              <textarea id="message" name="message" rows="5" required
-                class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#1DCD9F] focus:border-transparent transition-all resize-none"
-                placeholder="Tell me about your project or how I can help you..."></textarea>
-              <p class="text-xs text-gray-500 mt-1">
-                💡 Tip: Write a meaningful message with at least 3 words and 10 characters. Avoid random characters or
-                excessive repetition.
-              </p>
-            </div>
-
-            <input type="hidden" name="_subject" value="New message from Princy Maheshwari Portfolio!" />
-            <input type="hidden" name="site" value="Princy Maheshwari Portfolio" />
-
-            <button type="submit" id="submitBtn"
-              class="w-full bg-[#1DCD9F] text-white py-3 px-6 rounded-lg font-semibold hover:bg-[#17b890] transition-all duration-300 transform hover:scale-105 focus:ring-2 focus:ring-[#1DCD9F] focus:ring-offset-2">
-              <span id="submitText">Send Message</span>
-              <span id="submitLoading" class="hidden">
-                <i class="fas fa-spinner fa-spin mr-2"></i>Sending...
-              </span>
-            </button>
-          </form>
-
-          <!-- Success/Error Messages -->
-          <div id="formMessage" class="mt-4 p-4 rounded-lg hidden">
-            <p id="messageText"></p>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- CONTACT SECTION -->
-  <section id="contact"
-    class="bg-black text-white py-20 px-6 flex items-center justify-center relative overflow-hidden">
-    <!-- PARTICLES BACKGROUND -->
-    <div id="particles-contact" class="absolute top-0 left-0 w-full h-full z-0"></div>
-
-    <div class="w-full max-w-4xl text-center flex flex-col items-center gap-6 relative z-10">
-      <h2 class="text-2xl md:text-3xl font-bold text-white px-4">Let's connect and build something amazing!</h2>
-
-      <div class="space-y-4 max-w-2xl mx-auto px-4">
-        <p class="text-gray-300 text-lg leading-relaxed">
-          I'm open to collaborations on interesting projects, research ideas, and deep-tech initiatives. Whether it's
-          exploring inference optimization, building agentic systems, or tackling quantitative problems—let's talk.
-        </p>
-        <p class="text-gray-400 text-lg leading-relaxed">
-          The best way to reach me is through the contact form above.
-        </p>
-      </div>
-      <a href="#contact-form"
-        class="inline-block mt-6 bg-[#1DCD9F] text-white font-semibold px-8 py-3 rounded-lg hover:bg-[#17b890] transition-colors">
-        Open contact form
-      </a>
-    </div>
-  </section>
-
-  <!-- Footer -->
-  <footer class="bg-black text-white py-12 px-6 relative overflow-hidden">
-    <!-- PARTICLES BACKGROUND -->
-    <div id="particles-footer" class="absolute top-0 left-0 w-full h-full z-0"></div>
-
-    <div class="max-w-6xl mx-auto relative z-10">
-      <div class="grid md:grid-cols-2 gap-10 mb-8 md:max-w-3xl md:mx-auto">
-        <!-- Quick Links -->
-        <div>
-          <h4 class="text-xl font-semibold mb-4 text-[#1DCD9F]">Quick Links</h4>
-          <div class="grid grid-cols-2 gap-3">
-            <a href="#" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Home</a>
-            <a href="#about" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">About</a>
-            <a href="#tech-stack" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Skills</a>
-            <a href="#projects" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Projects</a>
-            <a href="#relevant-coursework" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Coursework</a>
-            <a href="#contact-form" class="text-gray-300 hover:text-[#1DCD9F] transition-colors">Contact</a>
-          </div>
-        </div>
-
-        <!-- Get In Touch -->
-        <div>
-          <h4 class="text-xl font-semibold mb-4 text-[#1DCD9F]">Get In Touch</h4>
-          <div class="space-y-3">
-            <a href="#contact-form"
-              class="flex items-center text-gray-300 hover:text-[#1DCD9F] transition-colors">
-              <i class="fas fa-paper-plane mr-2" style="color: #FFA500;"></i>
-              Contact form
-            </a>
-            <div class="flex items-center text-gray-300">
-              <i class="fas fa-code mr-2" style="color: #FFA500;"></i>
-              Available for opportunities
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Social Media Icons -->
-      <div class="flex justify-center gap-4 mb-6 py-6 border-t border-gray-800">
-        <a href="https://github.com/princymaheshwari" target="_blank"
-          class="w-12 h-12 rounded-full bg-gray-800 hover:bg-[#1DCD9F] flex items-center justify-center transition-all">
-          <i class="fab fa-github text-xl"></i>
-        </a>
-        <a href="https://www.linkedin.com/in/princy-maheshwari1/" target="_blank"
-          class="w-12 h-12 rounded-full bg-gray-800 hover:bg-[#1DCD9F] flex items-center justify-center transition-all">
-          <i class="fab fa-linkedin-in text-xl"></i>
-        </a>
-        <a href="#contact-form"
-          class="w-12 h-12 rounded-full bg-gray-800 hover:bg-[#1DCD9F] flex items-center justify-center transition-all"
-          aria-label="Contact form">
-          <i class="fas fa-paper-plane text-xl"></i>
-        </a>
-      </div>
-
-      <!-- Bottom Copyright -->
-      <div class="text-center text-gray-400 text-sm border-t border-gray-800 pt-6">
-        <p>Made with <span style="color: #ff0000;">❤️</span> and <span style="color: #FFA500;">☕</span> by <span
-            class="text-[#1DCD9F] font-semibold">Princy Maheshwari</span></p>
-        <p class="mt-2">© 2026 Princy Maheshwari. All rights reserved.</p>
-      </div>
-    </div>
+  <footer class="flat-footer">
+    <p>© 2026 PRINCY MAHESHWARI · <a href="https://github.com/princymaheshwari" target="_blank" rel="noopener">GITHUB</a> ·
+      <a href="https://www.linkedin.com/in/princy-maheshwari1/" target="_blank" rel="noopener">LINKEDIN</a></p>
   </footer>
 
-  <a href="#contact-form" class="fixed-email" title="Contact form">Contact</a>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-  <script src="https://unpkg.com/@motionone/dom/dist/motion.min.js"></script>
-  <script src="libs/gsap.min.js"></script>
-  <script src="libs/motion.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/gsap.min.js"></script>
-
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Flip.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Observer.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/ScrollToPlugin.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/Draggable.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/MotionPathPlugin.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/EaselPlugin.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/PixiPlugin.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/TextPlugin.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/EasePack.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/CustomEase.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <!-- ParticleJs -->
-  <script src="https://cdn.jsdelivr.net/npm/particles.js@2.0.0/particles.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Back to Top Button -->
-  <div class="wrapper">
-    <button class="back2top-button" id="backToTop">
-      <svg class="svgIcon" viewBox="0 0 384 512">
-        <path
-          d="M214.6 41.4c-12.5-12.5-32.8-12.5-45.3 0l-160 160c-12.5 12.5-12.5 32.8 0 45.3s32.8 12.5 45.3 0L160 141.2V448c0 17.7 14.3 32 32 32s32-14.3 32-32V141.2L329.4 246.6c12.5 12.5 32.8 12.5 45.3 0s12.5-32.8 0-45.3l-160-160z" />
-      </svg>
-      <span class="button-label">Back to Top</span>
-    </button>
-  </div>
-  <script src="script.js"></script>
-  <script src="additional-effects.js"></script>
-  </script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="data.js"></script>
+  <script src="board.js"></script>
+  <script src="main.js"></script>
 </body>
 
 </html>
