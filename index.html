@@ -35,6 +35,7 @@
 
   <!-- 3D board -->
   <canvas id="board-canvas" aria-label="3D evidence board — use the flat file link for a text version"></canvas>
+  <div id="board-tooltip" aria-hidden="true"></div>
   <div id="scroll-space"></div>
 
   <!-- case tabs -->
@@ -51,7 +52,7 @@
   </nav>
 
   <!-- dossier detail panel -->
-  <aside id="dossier" aria-live="polite">
+  <aside id="dossier" role="dialog" aria-modal="true" aria-labelledby="dossier-heading" aria-hidden="true">
     <div class="dossier-paper">
       <button id="dossier-close" aria-label="Close file">CLOSE FILE ✕</button>
       <div id="dossier-body"></div>

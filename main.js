@@ -29,6 +29,8 @@
   const scrollSpace = document.getElementById("scroll-space");
   const dossier = document.getElementById("dossier");
   const dossierBody = document.getElementById("dossier-body");
+  const dossierClose = document.getElementById("dossier-close");
+  const boardTooltip = document.getElementById("board-tooltip");
   const tipline = document.getElementById("tipline");
 
   function cardById(id) {
@@ -38,34 +40,98 @@
   /* ---------------- dossier panel ---------------- */
 
   let closeDossierExtra = null;
+  let dossierReturnFocus = null;
 
-  function openDossier(card) {
+  function hideBoardTooltip() {
+    if (!boardTooltip) return;
+    boardTooltip.classList.remove("visible");
+    boardTooltip.setAttribute("aria-hidden", "true");
+  }
+
+  function updateBoardTooltip(card, point) {
+    if (!boardTooltip || !card || !point || dossier.classList.contains("open")) {
+      hideBoardTooltip();
+      return;
+    }
+
+    const tooltipTitle = card.title || cardById(card.detailRef)?.title || card.caption || "CASE FILE";
+    boardTooltip.textContent = `OPEN FILE · ${tooltipTitle}`;
+    boardTooltip.classList.add("visible");
+    boardTooltip.setAttribute("aria-hidden", "false");
+
+    const margin = 12;
+    const gap = 18;
+    const width = boardTooltip.offsetWidth;
+    const height = boardTooltip.offsetHeight;
+    let left = point.x + gap;
+    let top = point.y + gap;
+
+    if (left + width > window.innerWidth - margin) left = point.x - width - gap;
+    if (top + height > window.innerHeight - margin) top = point.y - height - gap;
+
+    boardTooltip.style.left = `${Math.max(margin, Math.min(left, window.innerWidth - width - margin))}px`;
+    boardTooltip.style.top = `${Math.max(margin, Math.min(top, window.innerHeight - height - margin))}px`;
+  }
+
+  function openDossier(card, returnFocus) {
     let src = card;
     if (card.detailRef) src = cardById(card.detailRef) || card;
     const det = src.detail;
     if (!det) return;
+    hideBoardTooltip();
+    dossierReturnFocus = returnFocus || (document.activeElement !== document.body ? document.activeElement : null);
     const linksHtml = (det.links || [])
       .map((l) => `<a class="stamp-btn" href="${l.href}" target="_blank" rel="noopener">${l.label}</a>`)
       .join("");
     dossierBody.innerHTML = `
       <p class="dossier-case">${D.meta.caseNo} · INTERNAL MEMO</p>
-      <h2>${det.heading}</h2>
+      <h2 id="dossier-heading">${det.heading}</h2>
       ${det.body.map((p) => `<p>${p}</p>`).join("")}
       ${linksHtml ? `<div class="dossier-links">${linksHtml}</div>` : ""}
     `;
     dossier.classList.add("open");
+    dossier.setAttribute("aria-hidden", "false");
     document.body.classList.add("dossier-open");
+    requestAnimationFrame(() => dossierClose.focus({ preventScroll: true }));
   }
 
   function closeDossier() {
+    if (!dossier.classList.contains("open")) return;
     dossier.classList.remove("open");
     document.body.classList.remove("dossier-open");
     if (closeDossierExtra) closeDossierExtra();
+    if (dossierReturnFocus && dossierReturnFocus.isConnected) {
+      dossierReturnFocus.focus({ preventScroll: true });
+    } else {
+      dossierClose.blur();
+    }
+    dossier.setAttribute("aria-hidden", "true");
+    dossierReturnFocus = null;
   }
 
-  document.getElementById("dossier-close").addEventListener("click", closeDossier);
+  dossierClose.addEventListener("click", closeDossier);
   document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closeDossier();
+    if (e.key === "Escape" && dossier.classList.contains("open")) {
+      e.preventDefault();
+      closeDossier();
+      return;
+    }
+
+    if (e.key === "Tab" && dossier.classList.contains("open")) {
+      const focusable = Array.from(
+        dossier.querySelectorAll('a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])')
+      ).filter((el) => el.offsetParent !== null);
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    }
   });
 
   /* ---------------- 3D mode ---------------- */
@@ -94,6 +160,7 @@
         const api = window.PMBoard.init({
           canvas: document.getElementById("board-canvas"),
           images,
+          onHoverChange: updateBoardTooltip,
           onFocusChange(card) {
             if (card) openDossier(card);
           },
@@ -201,7 +268,7 @@
                 <h3>${c.title}</h3>
                 <p class="flat-p">${(c.lines || []).join(" ")}</p>
                 ${tags}
-                <button class="flat-more" data-open="${c.id}">read the file →</button>
+                <button class="flat-more" data-open="${c.id}" aria-haspopup="dialog" aria-label="Read the file for ${c.title}">read the file →</button>
               </li>`;
             })
             .join("")}
@@ -213,7 +280,7 @@
         <div class="flat-evidence">
           ${evidence
             .map(
-              (c) => `<figure class="flat-exhibit" data-open="${c.id}">
+              (c) => `<figure class="flat-exhibit" data-open="${c.id}" role="button" tabindex="0" aria-haspopup="dialog" aria-label="Open ${c.tag}: ${c.caption}">
                 <img src="${c.img}" alt="${c.caption}" loading="lazy" />
                 <figcaption><span class="flat-extag">${c.tag}</span> ${c.caption}</figcaption>
               </figure>`
@@ -228,13 +295,24 @@
       </section>
     `;
 
-    root.querySelectorAll("[data-open]").forEach((el) => {
-      el.addEventListener("click", () => {
+    function activateFlatFile(el) {
         const c = cardById(el.dataset.open);
-        if (c) openDossier(c);
-      });
+        if (c) openDossier(c, el);
+    }
+
+    root.querySelectorAll("[data-open]").forEach((el) => {
+      el.addEventListener("click", () => activateFlatFile(el));
+      if (el.getAttribute("role") === "button" && el.tagName !== "BUTTON") {
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            activateFlatFile(el);
+          }
+        });
+      }
     });
 
+    hideBoardTooltip();
     tipline.classList.add("visible");
     loading.classList.add("done");
     setTimeout(() => loading.remove(), 900);

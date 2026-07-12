@@ -48,6 +48,7 @@ window.PMBoard = (function () {
   let lookY = { cur: BOARD_TOP - 24 };
   let clock;
   let onFocusChange = null;
+  let onHoverChange = null;
 
   /* ---------------- texture helpers ---------------- */
 
@@ -170,6 +171,18 @@ window.PMBoard = (function () {
 
   const S = 40; // px per board unit for card textures
 
+  function setFittedFont(x, text, preferred, minimum, maxWidth, family, weight) {
+    const prefix = weight ? `${weight} ` : "";
+    let size = preferred;
+    x.font = `${prefix}${size}px ${family}`;
+    const measured = x.measureText(text || "").width;
+    if (measured > maxWidth) {
+      size = Math.max(minimum, preferred * (maxWidth / measured));
+      x.font = `${prefix}${size}px ${family}`;
+    }
+    return size;
+  }
+
   function cardTexture(card, img) {
     const W = Math.round(card.w * S), H = Math.round(card.h * S);
     const c = makeCanvas(W, H);
@@ -179,11 +192,11 @@ window.PMBoard = (function () {
     if (card.type === "banner") {
       paperBase(x, W, H, true);
       x.fillStyle = COL.ink;
-      x.font = `${H * 0.42}px "Special Elite", monospace`;
+      setFittedFont(x, card.title, H * 0.42, H * 0.34, W - S * 1.6, '"Special Elite", monospace');
       let w = x.measureText(card.title).width;
       x.fillText(card.title, (W - w) / 2, H * 0.5);
       x.fillStyle = COL.red;
-      x.font = `${H * 0.13}px "Special Elite", monospace`;
+      setFittedFont(x, card.sub, H * 0.155, H * 0.125, W - S * 1.7, '"Special Elite", monospace');
       w = x.measureText(card.sub).width;
       x.fillText(card.sub, (W - w) / 2, H * 0.75);
       x.strokeStyle = COL.ink;
@@ -213,19 +226,21 @@ window.PMBoard = (function () {
       }
       let cy = S * 1.45;
       x.fillStyle = card.type === "lead" ? COL.red : COL.ink;
-      x.font = `${S * 1.05}px "Special Elite", monospace`;
+      setFittedFont(x, card.title, S * 1.12, S * 1.05, W - pad * 1.1, '"Special Elite", monospace');
       x.fillText(card.title, pad * 0.55, cy);
-      cy += S * 0.95;
+      cy += S * 1.02;
       if (card.date) {
         x.fillStyle = COL.inkFaint;
-        x.font = `${S * 0.6}px "Special Elite", monospace`;
+        setFittedFont(x, card.date, S * 0.68, S * 0.61, W - pad * 1.1, '"Special Elite", monospace');
         x.fillText(card.date, pad * 0.55, cy);
-        cy += S * 0.62;
+        cy += S * 0.7;
       }
-      cy += S * 0.62;
+      cy += S * 0.58;
       x.fillStyle = COL.ink;
-      x.font = `${S * 0.72}px "Special Elite", monospace`;
-      (card.lines || []).forEach((ln) => {
+      const bodyLines = card.lines || [];
+      const longestLine = bodyLines.reduce((longest, line) => line.length > longest.length ? line : longest, "");
+      setFittedFont(x, longestLine, S * 0.8, S * 0.74, W - pad * 1.1, '"Special Elite", monospace');
+      bodyLines.forEach((ln) => {
         x.fillText(ln, pad * 0.55, cy);
         cy += S * 0.95;
       });
@@ -265,7 +280,7 @@ window.PMBoard = (function () {
         x.fillRect(b, b, pw, ph);
       }
       x.fillStyle = COL.inkFaint;
-      x.font = `${S * 0.78}px "Caveat", cursive`;
+      setFittedFont(x, card.caption, S * 0.9, S * 0.8, W - S * 1.2, '"Caveat", cursive');
       const cw = x.measureText(card.caption).width;
       x.fillText(card.caption, (W - cw) / 2, H - S * 0.85);
       if (card.tag) {
@@ -276,7 +291,7 @@ window.PMBoard = (function () {
         x.fillStyle = COL.red;
         x.fillRect(-S * 1.7, -S * 0.62, S * 3.4, S * 1.15);
         x.fillStyle = "#f0e7d3";
-        x.font = `${S * 0.62}px "Special Elite", monospace`;
+        setFittedFont(x, card.tag, S * 0.68, S * 0.62, S * 2.9, '"Special Elite", monospace');
         const tw = x.measureText(card.tag).width;
         x.fillText(card.tag, -tw / 2, S * 0.2);
         x.restore();
@@ -294,9 +309,11 @@ window.PMBoard = (function () {
       x.closePath();
       x.fill();
       x.fillStyle = "#3a3129";
-      x.font = `${S * 0.95}px "Caveat", cursive`;
+      const noteLines = card.hand || [];
+      const longestNote = noteLines.reduce((longest, line) => line.length > longest.length ? line : longest, "");
+      setFittedFont(x, longestNote, S * 1.05, S * 0.95, W - S * 1.1, '"Caveat", cursive');
       let cy = S * 2.1;
-      (card.hand || []).forEach((ln) => {
+      noteLines.forEach((ln) => {
         const lw = x.measureText(ln).width;
         x.fillText(ln, (W - lw) / 2, cy);
         cy += S * 1.25;
@@ -422,7 +439,12 @@ window.PMBoard = (function () {
 
       const paper = new THREE.Mesh(
         new THREE.PlaneGeometry(card.w, card.h, 6, 6),
-        new THREE.MeshStandardMaterial({ map: t, roughness: 0.85 })
+        new THREE.MeshStandardMaterial({
+          map: t,
+          roughness: 0.85,
+          emissive: 0x5a2a16,
+          emissiveIntensity: 0,
+        })
       );
       paper.castShadow = true;
       paper.receiveShadow = true;
@@ -458,6 +480,7 @@ window.PMBoard = (function () {
         baseRotZ: grp.rotation.z,
         hover: 0,
         pinWorld,
+        paper,
         phase: Math.random() * Math.PI * 2,
       };
       paper.userData.root = grp;
@@ -560,9 +583,12 @@ window.PMBoard = (function () {
       const u = g.userData;
       const want = g === hoverGrp || (focus && focus.grp === g) ? 1 : 0;
       u.hover += (want - u.hover) * 0.12;
-      g.position.z = u.baseZ + u.hover * 1.5 + Math.sin(t * 0.9 + u.phase) * 0.05;
+      g.position.z = u.baseZ + u.hover * 2 + Math.sin(t * 0.9 + u.phase) * 0.05;
       g.rotation.z = u.baseRotZ * (1 - u.hover * 0.6) + Math.sin(t * 0.7 + u.phase) * 0.004;
       g.rotation.y = u.hover * -0.05 + Math.sin(t * 0.5 + u.phase) * 0.006;
+      const hoverScale = 1 + u.hover * 0.028;
+      g.scale.set(hoverScale, hoverScale, hoverScale);
+      u.paper.material.emissiveIntensity = u.hover * 0.24;
     });
 
     /* dust drift */
@@ -576,6 +602,7 @@ window.PMBoard = (function () {
 
   function init(opts) {
     onFocusChange = opts.onFocusChange || null;
+    onHoverChange = opts.onHoverChange || null;
 
     renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true });
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
@@ -622,25 +649,50 @@ window.PMBoard = (function () {
       renderer.setSize(window.innerWidth, window.innerHeight);
     });
 
-    window.addEventListener("pointermove", (e) => {
+    opts.canvas.addEventListener("pointermove", (e) => {
       setPointer(e);
-      if (focus) return;
+      if (focus) {
+        if (onHoverChange) onHoverChange(null, null);
+        return;
+      }
       const hit = pick();
       hovered = hit;
       document.body.classList.toggle("board-hover", !!hit);
+      if (onHoverChange) {
+        onHoverChange(
+          hit ? hit.userData.card : null,
+          hit ? { x: e.clientX, y: e.clientY } : null
+        );
+      }
+    });
+
+    opts.canvas.addEventListener("pointerleave", () => {
+      hovered = null;
+      document.body.classList.remove("board-hover");
+      if (onHoverChange) onHoverChange(null, null);
     });
 
     opts.canvas.addEventListener("click", (e) => {
       if (focus) return;
       setPointer(e);
       const hit = pick();
-      if (hit) focusCard(hit);
+      if (hit) {
+        hovered = null;
+        document.body.classList.remove("board-hover");
+        if (onHoverChange) onHoverChange(null, null);
+        focusCard(hit);
+      }
     });
 
     animate();
     return {
       setScrollT(tt) {
         if (focus) return;
+        if (hovered) {
+          hovered = null;
+          document.body.classList.remove("board-hover");
+          if (onHoverChange) onHoverChange(null, null);
+        }
         const top = BOARD_TOP - 26;
         const bot = BOARD_BOT + 22;
         camY.target = top + (bot - top) * tt;
