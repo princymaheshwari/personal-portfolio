@@ -241,9 +241,13 @@ body.mode-3d::after {
 }
 
 #dossier-close {
-  position: absolute;
-  top: 0.9rem; right: 0.9rem;
-  background: none;
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  margin: 0 0 1.35rem auto;
+  background: rgba(240, 231, 211, 0.96);
   border: 1.5px solid var(--ink-faint);
   color: var(--ink-faint);
   font-family: var(--font-type);
