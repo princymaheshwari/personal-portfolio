@@ -168,7 +168,7 @@ window.PMBoard = (function () {
     x.restore();
   }
 
-  const S = 34; // px per board unit for card textures
+  const S = 40; // px per board unit for card textures
 
   function cardTexture(card, img) {
     const W = Math.round(card.w * S), H = Math.round(card.h * S);
@@ -203,31 +203,31 @@ window.PMBoard = (function () {
         x.strokeStyle = COL.blueRule;
         x.globalAlpha = 0.5;
         x.lineWidth = 1.4;
-        for (let ly = S * 2.6; ly < H - S * 0.5; ly += S * 1.05) {
+        for (let ly = S * 2.9; ly < H - S * 0.5; ly += S * 0.95) {
           x.beginPath(); x.moveTo(pad * 0.5, ly); x.lineTo(W - pad * 0.5, ly); x.stroke();
         }
         x.strokeStyle = COL.red;
         x.globalAlpha = 0.6;
-        x.beginPath(); x.moveTo(pad * 0.5, S * 1.7); x.lineTo(W - pad * 0.5, S * 1.7); x.stroke();
+        x.beginPath(); x.moveTo(pad * 0.5, S * 1.95); x.lineTo(W - pad * 0.5, S * 1.95); x.stroke();
         x.globalAlpha = 1;
       }
-      let cy = S * 1.35;
+      let cy = S * 1.45;
       x.fillStyle = card.type === "lead" ? COL.red : COL.ink;
-      x.font = `${S * 0.92}px "Special Elite", monospace`;
+      x.font = `${S * 1.05}px "Special Elite", monospace`;
       x.fillText(card.title, pad * 0.55, cy);
-      cy += S * 0.85;
+      cy += S * 0.95;
       if (card.date) {
         x.fillStyle = COL.inkFaint;
-        x.font = `${S * 0.5}px "Special Elite", monospace`;
+        x.font = `${S * 0.6}px "Special Elite", monospace`;
         x.fillText(card.date, pad * 0.55, cy);
-        cy += S * 0.55;
+        cy += S * 0.62;
       }
-      cy += S * 0.55;
+      cy += S * 0.62;
       x.fillStyle = COL.ink;
-      x.font = `${S * 0.58}px "Special Elite", monospace`;
+      x.font = `${S * 0.72}px "Special Elite", monospace`;
       (card.lines || []).forEach((ln) => {
         x.fillText(ln, pad * 0.55, cy);
-        cy += S * 0.78;
+        cy += S * 0.95;
       });
       if (card.stamp) {
         stamp(x, card.stamp, W * 0.68, H * 0.84, -0.12, S * 0.72);
@@ -495,7 +495,7 @@ window.PMBoard = (function () {
         new THREE.PlaneGeometry(tw, thh),
         new THREE.MeshStandardMaterial({ map: tagTexture(th.label), roughness: 0.9, transparent: true })
       );
-      const tp = curve.getPoint(0.5);
+      const tp = curve.getPoint(th.tagT || 0.5);
       tag.position.set(tp.x, tp.y - thh * 0.62, tp.z + 0.35);
       tag.rotation.z = (Math.random() - 0.5) * 0.14;
       tag.castShadow = true;

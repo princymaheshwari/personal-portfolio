@@ -429,7 +429,7 @@ window.CASE_DATA = {
     { from: "gsu", to: "nutrigirl", label: "CS fundamentals, first build" },
     { from: "ra", to: "sep", label: "sequence models → telemetry" },
     { from: "nutrigirl", to: "toolfinder", label: "pose CV → vision pipelines" },
-    { from: "toolfinder", to: "veritas", label: "GPU inference → LLM routing" },
-    { from: "sep", to: "bioinfo", label: "signal processing → sequence data" },
+    { from: "toolfinder", to: "veritas", label: "GPU inference → LLM routing", tagT: 0.3 },
+    { from: "sep", to: "bioinfo", label: "signal processing → sequence data", tagT: 0.72 },
   ],
 };
