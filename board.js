@@ -38,23 +38,26 @@ window.PMBoard = (function () {
   let renderer, scene, camera, lamp, lampTarget;
   let cardMeshes = [];
   let flutterers = [];
+  let cardGroups = new Map();
   let dust;
   let raycaster, pointer;
   let hovered = null;
-  let focus = null; // {grp, returnView, settled}
+  let focus = null; // desktop dossier focus
+  let guided = null; // {grp, settled}
   let camY = { cur: BOARD_TOP - 24, target: BOARD_TOP - 24 };
   let camX = { cur: 0, target: 0 };
   let camZ = { cur: 120, target: 62 };
   let lookY = { cur: BOARD_TOP - 24 };
   let clock;
   let viewMode = "desktop-scroll";
-  let currentOverview = null;
-  let overviewSettled = true;
   let pointerDown = null;
   let onFocusChange = null;
-  let onFocusSettled = null;
-  let onOverviewSettled = null;
   let onHoverChange = null;
+  let onCardChange = null;
+  let onCardSettled = null;
+  let onCardActivate = null;
+  let onStepRequest = null;
+  let getViewportInsets = null;
 
   /* ---------------- texture helpers ---------------- */
 
@@ -68,7 +71,13 @@ window.PMBoard = (function () {
   function tex(c, repeat) {
     const t = new THREE.CanvasTexture(c);
     t.encoding = THREE.sRGBEncoding;
-    t.anisotropy = 4;
+    const maxAnisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 4;
+    t.anisotropy = Math.min(viewMode === "mobile-guided" ? 8 : 4, maxAnisotropy);
+    if (viewMode === "mobile-guided" && !repeat) {
+      t.generateMipmaps = false;
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
+    }
     if (repeat) {
       t.wrapS = t.wrapT = THREE.RepeatWrapping;
       t.repeat.set(repeat[0], repeat[1]);
@@ -175,7 +184,7 @@ window.PMBoard = (function () {
     x.restore();
   }
 
-  const S = 40; // px per board unit for card textures
+  let S = 40; // px per board unit for card textures; raised for mobile guided mode
 
   function setFittedFont(x, text, preferred, minimum, maxWidth, family, weight) {
     const prefix = weight ? `${weight} ` : "";
@@ -187,6 +196,29 @@ window.PMBoard = (function () {
       x.font = `${prefix}${size}px ${family}`;
     }
     return size;
+  }
+
+  function dateLines(x, text, preferred, maxWidth, family) {
+    x.font = `${preferred}px ${family}`;
+    if (x.measureText(text).width <= maxWidth) return [text];
+
+    const parts = text.split(/\s*·\s*/).filter(Boolean);
+    if (parts.length < 2) return [text];
+
+    let best = [text];
+    let bestWidth = Infinity;
+    for (let split = 1; split < parts.length; split++) {
+      const candidate = [
+        parts.slice(0, split).join(" · "),
+        parts.slice(split).join(" · "),
+      ];
+      const widest = Math.max(...candidate.map((line) => x.measureText(line).width));
+      if (widest < bestWidth) {
+        best = candidate;
+        bestWidth = widest;
+      }
+    }
+    return best;
   }
 
   function cardTexture(card, img) {
@@ -254,28 +286,62 @@ window.PMBoard = (function () {
         x.beginPath(); x.moveTo(pad * 0.5, S * 1.95); x.lineTo(W - pad * 0.5, S * 1.95); x.stroke();
         x.globalAlpha = 1;
       }
-      let cy = S * 1.45;
-      x.fillStyle = card.type === "lead" ? COL.red : COL.ink;
-      setFittedFont(x, card.title, S * 1.12, S * 1.05, W - pad * 1.1, '"Special Elite", monospace');
-      x.fillText(card.title, pad * 0.55, cy);
-      cy += S * 1.02;
-      if (card.date) {
-        x.fillStyle = COL.inkFaint;
-        setFittedFont(x, card.date, S * 0.68, S * 0.61, W - pad * 1.1, '"Special Elite", monospace');
-        x.fillText(card.date, pad * 0.55, cy);
-        cy += S * 0.7;
-      }
-      cy += S * 0.58;
-      x.fillStyle = COL.ink;
       const bodyLines = card.lines || [];
       const longestLine = bodyLines.reduce((longest, line) => line.length > longest.length ? line : longest, "");
-      setFittedFont(x, longestLine, S * 0.8, S * 0.74, W - pad * 1.1, '"Special Elite", monospace');
-      bodyLines.forEach((ln) => {
-        x.fillText(ln, pad * 0.55, cy);
-        cy += S * 0.95;
-      });
+      const maxTextWidth = W - pad * 1.1;
+      const guidedText = viewMode === "mobile-guided";
+      let cy = guidedText ? S * 1.42 : S * 1.45;
+
+      x.fillStyle = card.type === "lead" ? COL.red : (guidedText ? "#211c17" : COL.ink);
+      setFittedFont(
+        x,
+        card.title,
+        guidedText ? S * 1.22 : S * 1.12,
+        guidedText ? S * 1.02 : S * 1.05,
+        maxTextWidth,
+        '"Special Elite", monospace'
+      );
+      x.fillText(card.title, pad * 0.55, cy);
+      cy += S * (guidedText ? 1.08 : 1.02);
+
+      if (card.date) {
+        x.fillStyle = guidedText ? "#393127" : COL.inkFaint;
+        if (guidedText) {
+          const lines = dateLines(x, card.date, S * 0.82, maxTextWidth, '"Special Elite", monospace');
+          const longestDate = lines.reduce((longest, line) => line.length > longest.length ? line : longest, "");
+          setFittedFont(x, longestDate, S * 0.82, S * 0.68, maxTextWidth, '"Special Elite", monospace');
+          lines.forEach((line) => {
+            x.fillText(line, pad * 0.55, cy);
+            cy += S * 0.82;
+          });
+        } else {
+          setFittedFont(x, card.date, S * 0.68, S * 0.61, maxTextWidth, '"Special Elite", monospace');
+          x.fillText(card.date, pad * 0.55, cy);
+          cy += S * 0.7;
+        }
+      }
+
+      cy += S * (guidedText ? 0.38 : 0.58);
+      x.fillStyle = guidedText ? "#211c17" : COL.ink;
+      if (guidedText && bodyLines.length) {
+        const bottomReserve = S * (card.stamp ? 2 : 0.55);
+        const availableHeight = Math.max(S, H - cy - bottomReserve);
+        const lineHeight = Math.min(S * 1.06, availableHeight / bodyLines.length);
+        const preferredBody = Math.min(S * 1.1, lineHeight * 1.02);
+        setFittedFont(x, longestLine, preferredBody, S * 0.72, maxTextWidth, '"Special Elite", monospace');
+        bodyLines.forEach((line) => {
+          x.fillText(line, pad * 0.55, cy);
+          cy += lineHeight;
+        });
+      } else {
+        setFittedFont(x, longestLine, S * 0.8, S * 0.74, maxTextWidth, '"Special Elite", monospace');
+        bodyLines.forEach((line) => {
+          x.fillText(line, pad * 0.55, cy);
+          cy += S * 0.95;
+        });
+      }
       if (card.stamp) {
-        stamp(x, card.stamp, W * 0.68, H * 0.84, -0.12, S * 0.72);
+        stamp(x, card.stamp, W * 0.68, guidedText ? H - S * 0.72 : H * 0.84, -0.12, S * 0.72);
       }
       if (card.type === "report") {
         /* punched holes up top */
@@ -424,7 +490,7 @@ window.PMBoard = (function () {
     });
 
     /* dust motes */
-    const N = viewMode === "mobile-overview" ? 120 : 340;
+    const N = viewMode === "mobile-guided" ? 120 : 340;
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 180;
@@ -514,6 +580,7 @@ window.PMBoard = (function () {
         paper,
         phase: Math.random() * Math.PI * 2,
       };
+      cardGroups.set(card.id, grp);
       paper.userData.root = grp;
       if (card.detail || card.detailRef) cardMeshes.push(paper);
       flutterers.push(grp);
@@ -579,10 +646,30 @@ window.PMBoard = (function () {
 
     cardMeshes.forEach((paper) => {
       const card = paper.userData.root.userData.card;
-      projected.set(card.pos[0], card.pos[1], CARD_Z).project(camera);
-      const x = rect.left + (projected.x + 1) * rect.width / 2;
-      const y = rect.top + (1 - projected.y) * rect.height / 2;
-      const distance = Math.hypot(clientX - x, clientY - y);
+      const halfW = card.w / 2;
+      const halfH = card.h / 2;
+      let minX = Infinity, maxX = -Infinity;
+      let minY = Infinity, maxY = -Infinity;
+
+      paper.updateWorldMatrix(true, false);
+      [
+        [-halfW, -halfH], [halfW, -halfH],
+        [halfW, halfH], [-halfW, halfH],
+      ].forEach(([x, y]) => {
+        projected.set(x, y, 0);
+        paper.localToWorld(projected);
+        projected.project(camera);
+        const screenX = rect.left + (projected.x + 1) * rect.width / 2;
+        const screenY = rect.top + (1 - projected.y) * rect.height / 2;
+        minX = Math.min(minX, screenX);
+        maxX = Math.max(maxX, screenX);
+        minY = Math.min(minY, screenY);
+        maxY = Math.max(maxY, screenY);
+      });
+
+      const closestX = Math.max(minX, Math.min(clientX, maxX));
+      const closestY = Math.max(minY, Math.min(clientY, maxY));
+      const distance = Math.hypot(clientX - closestX, clientY - closestY);
       if (distance <= nearestDistance) {
         nearestDistance = distance;
         nearest = paper.userData.root;
@@ -598,68 +685,33 @@ window.PMBoard = (function () {
     if (onHoverChange) onHoverChange(null, null);
   }
 
-  function boundsForRegion(regionId) {
-    if (!regionId) {
-      return {
-        left: -(BOARD_W / 2 + 3.2),
-        right: BOARD_W / 2 + 3.2,
-        top: BOARD_TOP + 3.2,
-        bottom: BOARD_BOT - 3.2,
-      };
-    }
-
-    const cards = D.cards.filter((card) => card.region === regionId);
-    if (!cards.length) return boundsForRegion(null);
-    const bounds = cards.reduce((box, card) => ({
-      left: Math.min(box.left, card.pos[0] - card.w / 2),
-      right: Math.max(box.right, card.pos[0] + card.w / 2),
-      top: Math.max(box.top, card.pos[1] + card.h / 2),
-      bottom: Math.min(box.bottom, card.pos[1] - card.h / 2),
-    }), { left: Infinity, right: -Infinity, top: -Infinity, bottom: Infinity });
-
-    const gutter = regionId === "tipline" ? 7 : 4;
-    bounds.left -= gutter;
-    bounds.right += gutter;
-    bounds.top += gutter;
-    bounds.bottom -= gutter;
-    return bounds;
+  function guidedInsets() {
+    const supplied = getViewportInsets ? getViewportInsets() : null;
+    const inset = supplied || { top: 112, right: 12, bottom: 100, left: 12 };
+    return {
+      top: Math.max(0, Number(inset.top) || 0),
+      right: Math.max(0, Number(inset.right) || 0),
+      bottom: Math.max(0, Number(inset.bottom) || 0),
+      left: Math.max(0, Number(inset.left) || 0),
+    };
   }
 
-  function viewForBounds(bounds, padding) {
-    const width = bounds.right - bounds.left;
-    const height = bounds.top - bounds.bottom;
+  function guidedView(card) {
+    const inset = guidedInsets();
+    const availableWidth = Math.max(160, window.innerWidth - inset.left - inset.right);
+    const availableHeight = Math.max(180, window.innerHeight - inset.top - inset.bottom);
+    const pixelsPerUnit = Math.max(1, Math.min(
+      availableWidth * 0.94 / card.w,
+      availableHeight * 0.96 / card.h
+    ));
     const halfFov = camera.fov * Math.PI / 360;
-    const mobile = viewMode === "mobile-overview";
-    const rootStyle = mobile ? getComputedStyle(document.documentElement) : null;
-    const safeTop = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-top")) || 0 : 0;
-    const safeRight = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-right")) || 0 : 0;
-    const safeBottom = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-bottom")) || 0 : 0;
-    const safeLeft = mobile ? parseFloat(rootStyle.getPropertyValue("--safe-left")) || 0 : 0;
-    const topInset = mobile ? Math.min(170, 97 + Math.max(7, safeTop)) : 0;
-    const rightInset = mobile ? 12 + safeRight : 0;
-    const bottomInset = mobile ? Math.min(90, 31 + Math.max(13, safeBottom)) : 0;
-    const leftInset = mobile ? 12 + safeLeft : 0;
-    const heightFraction = mobile
-      ? Math.max(0.5, (window.innerHeight - topInset - bottomInset) / window.innerHeight)
-      : 1;
-    const widthFraction = mobile
-      ? Math.max(0.72, (window.innerWidth - leftInset - rightInset) / window.innerWidth)
-      : 1;
-    const distanceForHeight = height / (2 * Math.tan(halfFov) * heightFraction);
-    const distanceForWidth = width / (2 * Math.tan(halfFov) * camera.aspect * widthFraction);
-    const z = Math.max(distanceForHeight, distanceForWidth) * padding + 4;
-    const visibleWorldHeight = 2 * z * Math.tan(halfFov);
-    const visibleWorldWidth = visibleWorldHeight * camera.aspect;
-    const horizontalOffset = mobile
-      ? -((leftInset - rightInset) / 2) * (visibleWorldWidth / window.innerWidth)
-      : 0;
-    const verticalOffset = mobile
-      ? ((topInset - bottomInset) / 2) * (visibleWorldHeight / window.innerHeight)
-      : 0;
+    const desiredX = inset.left + availableWidth / 2;
+    const desiredY = inset.top + availableHeight / 2;
+    const distance = window.innerHeight / (2 * Math.tan(halfFov) * pixelsPerUnit);
     return {
-      x: (bounds.left + bounds.right) / 2 + horizontalOffset,
-      y: (bounds.top + bounds.bottom) / 2 + verticalOffset,
-      z,
+      x: card.pos[0] - (desiredX - window.innerWidth / 2) / pixelsPerUnit,
+      y: card.pos[1] + (desiredY - window.innerHeight / 2) / pixelsPerUnit,
+      z: distance + CARD_Z + 2.2,
     };
   }
 
@@ -675,50 +727,34 @@ window.PMBoard = (function () {
     }
   }
 
-  function setOverview(regionId, immediate) {
-    focus = null;
+  function selectGuidedCard(cardId, options) {
+    const grp = cardGroups.get(cardId);
+    if (!grp) return false;
+    const immediate = !!(options && options.immediate);
+    guided = { grp, settled: immediate };
     clearHover();
-    currentOverview = regionId || null;
-    overviewSettled = !!immediate;
-    const padding = currentOverview ? 1.18 : 1.08;
-    applyView(viewForBounds(boundsForRegion(currentOverview), padding), !!immediate);
-    if (immediate && onOverviewSettled) onOverviewSettled(currentOverview);
-  }
-
-  function focusView(card) {
-    const bounds = {
-      left: card.pos[0] - card.w / 2,
-      right: card.pos[0] + card.w / 2,
-      top: card.pos[1] + card.h / 2,
-      bottom: card.pos[1] - card.h / 2,
-    };
-    return viewForBounds(bounds, 1.42);
+    applyView(guidedView(grp.userData.card), immediate);
+    if (onCardChange) onCardChange(grp.userData.card);
+    if (immediate && onCardSettled) onCardSettled(grp.userData.card);
+    return true;
   }
 
   function focusCard(grp) {
     const card = grp.userData.card;
-    focus = { grp, returnView: currentOverview, settled: false };
+    focus = { grp };
     clearHover();
-    if (viewMode === "mobile-overview") {
-      applyView(focusView(card), false);
-    } else {
-      const fitH = Math.max(card.h * 1.55, card.w * 1.15 / camera.aspect);
-      camZ.target = fitH / (2 * Math.tan((camera.fov * Math.PI) / 360)) + 4;
-      camX.target = card.pos[0] * 0.92;
-      camY.target = card.pos[1];
-      if (onFocusChange) onFocusChange(card);
-    }
+    const fitH = Math.max(card.h * 1.55, card.w * 1.15 / camera.aspect);
+    camZ.target = fitH / (2 * Math.tan((camera.fov * Math.PI) / 360)) + 4;
+    camX.target = card.pos[0] * 0.92;
+    camY.target = card.pos[1];
+    if (onFocusChange) onFocusChange(card);
   }
 
   function unfocus() {
-    const returnView = focus ? focus.returnView : currentOverview;
+    if (viewMode === "mobile-guided") return;
     focus = null;
-    if (viewMode === "mobile-overview") {
-      setOverview(returnView, false);
-    } else {
-      camZ.target = 62;
-      camX.target = 0;
-    }
+    camZ.target = 62;
+    camX.target = 0;
     if (onFocusChange) onFocusChange(null);
   }
 
@@ -730,7 +766,7 @@ window.PMBoard = (function () {
     const t = clock.getElapsedTime();
 
     /* camera easing */
-    const mobileEase = viewMode === "mobile-overview";
+    const mobileEase = viewMode === "mobile-guided";
     camY.cur += (camY.target - camY.cur) * (mobileEase ? 0.09 : 0.07);
     camX.cur += (camX.target - camX.cur) * (mobileEase ? 0.09 : 0.06);
     camZ.cur += (camZ.target - camZ.cur) * (mobileEase ? 0.085 : 0.05);
@@ -745,30 +781,43 @@ window.PMBoard = (function () {
       Math.abs(camX.target - camX.cur) < 0.18 &&
       Math.abs(camY.target - camY.cur) < 0.18 &&
       Math.abs(camZ.target - camZ.cur) < 0.35;
-    if (focus && !focus.settled && cameraSettled) {
-      focus.settled = true;
-      if (onFocusSettled) onFocusSettled(focus.grp.userData.card);
-    } else if (!focus && !overviewSettled && cameraSettled) {
-      overviewSettled = true;
-      if (onOverviewSettled) onOverviewSettled(currentOverview);
+    if (guided && !guided.settled && cameraSettled) {
+      guided.settled = true;
+      if (onCardSettled) onCardSettled(guided.grp.userData.card);
     }
 
     /* lamp follows like a flashlight, with a slow pendulum */
-    lamp.position.set(Math.sin(t * 0.7) * 5, camY.cur + 26, 46);
-    lampTarget.position.set(Math.sin(t * 0.7) * 2.5, camY.cur - 2, 0);
+    if (viewMode === "mobile-guided") {
+      lamp.position.set(camX.cur + Math.sin(t * 0.7) * 2.5, camY.cur + 18, 42);
+      lampTarget.position.set(camX.cur, camY.cur, 0);
+    } else {
+      lamp.position.set(Math.sin(t * 0.7) * 5, camY.cur + 26, 46);
+      lampTarget.position.set(Math.sin(t * 0.7) * 2.5, camY.cur - 2, 0);
+    }
 
     /* card flutter + hover lift */
     const hoverGrp = hovered;
     flutterers.forEach((g) => {
       const u = g.userData;
-      const want = g === hoverGrp || (focus && focus.grp === g) ? 1 : 0;
+      const guidedSelected = !!(guided && guided.grp === g);
+      const want = g === hoverGrp || (focus && focus.grp === g) || guidedSelected ? 1 : 0;
       u.hover += (want - u.hover) * 0.12;
-      g.position.z = u.baseZ + u.hover * 2 + Math.sin(t * 0.9 + u.phase) * 0.05;
-      g.rotation.z = u.baseRotZ * (1 - u.hover * 0.6) + Math.sin(t * 0.7 + u.phase) * 0.004;
-      g.rotation.y = u.hover * -0.05 + Math.sin(t * 0.5 + u.phase) * 0.006;
-      const hoverScale = 1 + u.hover * 0.028;
-      g.scale.set(hoverScale, hoverScale, hoverScale);
-      u.paper.material.emissiveIntensity = u.hover * 0.24;
+      if (viewMode === "mobile-guided") {
+        const loose = 1 - u.hover;
+        g.position.z = u.baseZ + u.hover * 2.2 + Math.sin(t * 0.9 + u.phase) * 0.035 * loose;
+        g.rotation.z = u.baseRotZ * loose + Math.sin(t * 0.7 + u.phase) * 0.003 * loose;
+        g.rotation.y = Math.sin(t * 0.5 + u.phase) * 0.004 * loose;
+        const selectedScale = 1 + u.hover * 0.015;
+        g.scale.set(selectedScale, selectedScale, selectedScale);
+        u.paper.material.emissiveIntensity = u.hover * 0.08;
+      } else {
+        g.position.z = u.baseZ + u.hover * 2 + Math.sin(t * 0.9 + u.phase) * 0.05;
+        g.rotation.z = u.baseRotZ * (1 - u.hover * 0.6) + Math.sin(t * 0.7 + u.phase) * 0.004;
+        g.rotation.y = u.hover * -0.05 + Math.sin(t * 0.5 + u.phase) * 0.006;
+        const hoverScale = 1 + u.hover * 0.028;
+        g.scale.set(hoverScale, hoverScale, hoverScale);
+        u.paper.material.emissiveIntensity = u.hover * 0.24;
+      }
     });
 
     /* dust drift */
@@ -782,13 +831,23 @@ window.PMBoard = (function () {
 
   function init(opts) {
     viewMode = opts.viewMode || "desktop-scroll";
+    S = viewMode === "mobile-guided" ? 48 : 40;
+    cardMeshes = [];
+    flutterers = [];
+    cardGroups = new Map();
+    hovered = null;
+    focus = null;
+    guided = null;
     onFocusChange = opts.onFocusChange || null;
-    onFocusSettled = opts.onFocusSettled || null;
-    onOverviewSettled = opts.onOverviewSettled || null;
     onHoverChange = opts.onHoverChange || null;
+    onCardChange = opts.onCardChange || null;
+    onCardSettled = opts.onCardSettled || null;
+    onCardActivate = opts.onCardActivate || null;
+    onStepRequest = opts.onStepRequest || null;
+    getViewportInsets = opts.getViewportInsets || null;
 
     renderer = new THREE.WebGLRenderer({ canvas: opts.canvas, antialias: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, viewMode === "mobile-overview" ? 1.5 : 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
@@ -798,23 +857,21 @@ window.PMBoard = (function () {
 
     scene = new THREE.Scene();
     scene.background = new THREE.Color(COL.fog);
-    scene.fog = viewMode === "mobile-overview"
-      ? new THREE.Fog(COL.fog, 520, 900)
-      : new THREE.Fog(COL.fog, 130, 320);
+    scene.fog = new THREE.Fog(COL.fog, 130, 320);
 
     camera = new THREE.PerspectiveCamera(
       46,
       window.innerWidth / window.innerHeight,
       0.5,
-      viewMode === "mobile-overview" ? 1200 : 500
+      500
     );
     camera.position.set(0, camY.cur, camZ.cur);
 
     /* lights */
-    scene.add(new THREE.AmbientLight(0x51503f, 0.85));
-    lamp = new THREE.SpotLight(0xffd9a3, 1.2, 320, 0.72, 0.6, 1.1);
+    scene.add(new THREE.AmbientLight(0x51503f, viewMode === "mobile-guided" ? 1 : 0.85));
+    lamp = new THREE.SpotLight(0xffd9a3, viewMode === "mobile-guided" ? 1 : 1.2, 320, 0.72, 0.6, 1.1);
     lamp.castShadow = true;
-    const shadowSize = viewMode === "mobile-overview" ? 512 : 1024;
+    const shadowSize = viewMode === "mobile-guided" ? 512 : 1024;
     lamp.shadow.mapSize.set(shadowSize, shadowSize);
     lamp.shadow.bias = -0.002;
     lampTarget = new THREE.Object3D();
@@ -833,32 +890,47 @@ window.PMBoard = (function () {
     buildCards(opts.images);
     buildThreads();
 
-    if (viewMode === "mobile-overview") setOverview(null, true);
+    if (viewMode === "mobile-guided") selectGuidedCard(opts.initialCardId || "profile", { immediate: true });
 
     /* events */
     window.addEventListener("resize", () => {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
-      if (viewMode === "mobile-overview") {
-        if (focus) applyView(focusView(focus.grp.userData.card), false);
-        else setOverview(currentOverview, false);
+      if (viewMode === "mobile-guided" && guided) {
+        guided.settled = false;
+        applyView(guidedView(guided.grp.userData.card), false);
       }
     });
 
-    if (viewMode === "mobile-overview") {
+    if (viewMode === "mobile-guided") {
       opts.canvas.addEventListener("pointerdown", (e) => {
         pointerDown = { x: e.clientX, y: e.clientY };
+        try { opts.canvas.setPointerCapture(e.pointerId); } catch (err) { /* unsupported */ }
       });
 
       opts.canvas.addEventListener("pointerup", (e) => {
         if (!pointerDown) return;
-        const moved = Math.hypot(e.clientX - pointerDown.x, e.clientY - pointerDown.y);
+        const dx = e.clientX - pointerDown.x;
+        const dy = e.clientY - pointerDown.y;
+        const moved = Math.hypot(dx, dy);
         pointerDown = null;
-        if (moved > 10 || focus) return;
+        try { opts.canvas.releasePointerCapture(e.pointerId); } catch (err) { /* unsupported */ }
+
+        if (Math.abs(dx) >= 36 && Math.abs(dx) > Math.abs(dy) * 1.15) {
+          if (onStepRequest) onStepRequest(dx < 0 ? 1 : -1);
+          return;
+        }
+        if (moved > 10) return;
+
         setPointer(e);
         const hit = pick() || pickNearest(e.clientX, e.clientY, 32);
-        if (hit) focusCard(hit);
+        if (!hit) return;
+        if (guided && hit === guided.grp) {
+          if (onCardActivate) onCardActivate(hit.userData.card);
+        } else {
+          selectGuidedCard(hit.userData.card.id);
+        }
       });
 
       opts.canvas.addEventListener("pointercancel", () => {
@@ -895,7 +967,7 @@ window.PMBoard = (function () {
     animate();
     return {
       setScrollT(tt) {
-        if (viewMode === "mobile-overview") return;
+        if (viewMode === "mobile-guided") return;
         if (focus) return;
         if (hovered) {
           hovered = null;
@@ -907,11 +979,13 @@ window.PMBoard = (function () {
         camY.target = top + (bot - top) * tt;
       },
       jumpTo(y) { camY.target = y; lookY.cur = y; camY.cur = y; },
-      showOverview(regionId) {
-        if (viewMode === "mobile-overview") setOverview(regionId, false);
+      showCard(cardId, options) {
+        if (viewMode !== "mobile-guided") return false;
+        return selectGuidedCard(cardId, options);
       },
       unfocus,
       isFocused() { return !!focus; },
+      selectedCard() { return guided ? guided.grp.userData.card : null; },
       cameraY() { return camY.cur; },
     };
   }

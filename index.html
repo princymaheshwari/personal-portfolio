@@ -36,7 +36,18 @@
   <!-- 3D board -->
   <canvas id="board-canvas" aria-label="3D evidence board — use the text view link for an accessible version"></canvas>
   <div id="board-tooltip" aria-hidden="true"></div>
-  <div id="board-hint" aria-hidden="true">TAP A CASE TO INSPECT · USE TABS TO FILTER</div>
+  <div id="mobile-case-rail" aria-label="Case navigation" aria-hidden="true">
+    <button id="mobile-case-prev" type="button" aria-label="Previous case">←</button>
+    <div class="mobile-case-copy" aria-live="polite">
+      <p class="mobile-case-kicker">
+        <span id="mobile-case-region">SUBJECT</span>
+        <span id="mobile-case-count">1 OF 1</span>
+      </p>
+      <p id="mobile-case-title">SUBJECT PROFILE</p>
+      <p class="mobile-case-hint">SWIPE CASES · TAP CARD TO OPEN FILE</p>
+    </div>
+    <button id="mobile-case-next" type="button" aria-label="Next case">→</button>
+  </div>
   <div id="scroll-space"></div>
 
   <!-- case tabs -->
