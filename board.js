@@ -30,10 +30,12 @@ window.PMBoard = (function () {
     pin: 0x7e1f24,
   };
 
-  const BOARD_W = 132;
-  const BOARD_TOP = 150;
-  const BOARD_BOT = -160;
+  let BOARD_W = 132;
+  let BOARD_TOP = 150;
+  let BOARD_BOT = -160;
   const CARD_Z = 1.1;
+  let mobileLayout = false; // "mobile-scroll": single-column board, close camera
+  let baseZ = 62;           // camera resting distance for the current layout
 
   let renderer, scene, camera, lamp, lampTarget;
   let cardMeshes = [];
@@ -72,7 +74,7 @@ window.PMBoard = (function () {
     const t = new THREE.CanvasTexture(c);
     t.encoding = THREE.sRGBEncoding;
     const maxAnisotropy = renderer ? renderer.capabilities.getMaxAnisotropy() : 4;
-    t.anisotropy = Math.min(viewMode === "mobile-guided" ? 8 : 4, maxAnisotropy);
+    t.anisotropy = Math.min(viewMode === "desktop-scroll" ? 4 : 8, maxAnisotropy);
     if (viewMode === "mobile-guided" && !repeat) {
       t.generateMipmaps = false;
       t.minFilter = THREE.LinearFilter;
@@ -490,7 +492,7 @@ window.PMBoard = (function () {
     });
 
     /* dust motes */
-    const N = viewMode === "mobile-guided" ? 120 : 340;
+    const N = viewMode === "desktop-scroll" ? 340 : 160;
     const pos = new Float32Array(N * 3);
     for (let i = 0; i < N; i++) {
       pos[i * 3] = (Math.random() - 0.5) * 180;
@@ -610,14 +612,28 @@ window.PMBoard = (function () {
       tube.castShadow = true;
       scene.add(tube);
 
-      /* kraft tag at the midpoint naming what transferred */
+      /* kraft tag on the thread naming what transferred */
       const tw = 15, thh = 4;
       const tag = new THREE.Mesh(
         new THREE.PlaneGeometry(tw, thh),
         new THREE.MeshStandardMaterial({ map: tagTexture(th.label), roughness: 0.9, transparent: true })
       );
-      const tp = curve.getPoint(th.tagT || 0.5);
-      tag.position.set(tp.x, tp.y - thh * 0.62, tp.z + 0.35);
+      let tp;
+      if (mobileLayout && th.tagY != null) {
+        /* single-column layout: park the tag at a given world-y (a gap
+           between stacked cards) by sampling the curve */
+        let best = 0.5, bd = Infinity;
+        for (let i = 5; i <= 95; i++) {
+          const p = curve.getPoint(i / 100);
+          const d = Math.abs(p.y - th.tagY);
+          if (d < bd) { bd = d; best = i / 100; }
+        }
+        tp = curve.getPoint(best);
+      } else {
+        tp = curve.getPoint(th.tagT || 0.5);
+      }
+      const tagDrop = mobileLayout && th.tagY != null ? 0 : thh * 0.62;
+      tag.position.set(tp.x, tp.y - tagDrop, tp.z + 0.35);
       tag.rotation.z = (Math.random() - 0.5) * 0.14;
       tag.castShadow = true;
       scene.add(tag);
@@ -685,6 +701,30 @@ window.PMBoard = (function () {
     if (onHoverChange) onHoverChange(null, null);
   }
 
+  /* half of the world-height visible at distance z */
+  function visHalfAt(z) {
+    return z * Math.tan((camera.fov * Math.PI) / 360);
+  }
+
+  /* camera distance at which `w` world units span the viewport width */
+  function fitZForWidth(w) {
+    const halfW = Math.tan((camera.fov * Math.PI) / 360) * camera.aspect;
+    return (w / 2) / halfW;
+  }
+
+  function computeBaseZ() {
+    return mobileLayout ? Math.min(115, Math.max(45, fitZForWidth(30))) : 62;
+  }
+
+  /* camera-y travel range mapped to page scroll */
+  function scrollStops() {
+    if (mobileLayout) {
+      const vh = visHalfAt(baseZ);
+      return { top: BOARD_TOP - vh + 4, bot: BOARD_BOT + vh - 4 };
+    }
+    return { top: BOARD_TOP - 26, bot: BOARD_BOT + 22 };
+  }
+
   function guidedInsets() {
     const supplied = getViewportInsets ? getViewportInsets() : null;
     const inset = supplied || { top: 112, right: 12, bottom: 100, left: 12 };
@@ -743,17 +783,25 @@ window.PMBoard = (function () {
     const card = grp.userData.card;
     focus = { grp };
     clearHover();
-    const fitH = Math.max(card.h * 1.55, card.w * 1.15 / camera.aspect);
-    camZ.target = fitH / (2 * Math.tan((camera.fov * Math.PI) / 360)) + 4;
-    camX.target = card.pos[0] * 0.92;
-    camY.target = card.pos[1];
+    if (mobileLayout) {
+      /* fit by width; park the card in the upper part of the screen so the
+         bottom-sheet dossier doesn't cover it */
+      camZ.target = fitZForWidth(card.w * 1.34) + 3;
+      camX.target = card.pos[0];
+      camY.target = card.pos[1] - visHalfAt(camZ.target) * 0.42;
+    } else {
+      const fitH = Math.max(card.h * 1.55, card.w * 1.15 / camera.aspect);
+      camZ.target = fitH / (2 * Math.tan((camera.fov * Math.PI) / 360)) + 4;
+      camX.target = card.pos[0] * 0.92;
+      camY.target = card.pos[1];
+    }
     if (onFocusChange) onFocusChange(card);
   }
 
   function unfocus() {
     if (viewMode === "mobile-guided") return;
     focus = null;
-    camZ.target = 62;
+    camZ.target = baseZ;
     camX.target = 0;
     if (onFocusChange) onFocusChange(null);
   }
@@ -831,7 +879,19 @@ window.PMBoard = (function () {
 
   function init(opts) {
     viewMode = opts.viewMode || "desktop-scroll";
-    S = viewMode === "mobile-guided" ? 48 : 40;
+    S = viewMode === "desktop-scroll" ? 40 : 48;
+    mobileLayout = viewMode === "mobile-scroll";
+    if (mobileLayout) {
+      /* single-column board: swap in mobile positions/sizes from data.js */
+      BOARD_W = 40;
+      BOARD_TOP = 158;
+      BOARD_BOT = -234;
+      D.cards.forEach((c) => {
+        if (c.m) c.pos = c.m;
+        if (c.mw) c.w = c.mw;
+        if (c.mh) c.h = c.mh;
+      });
+    }
     cardMeshes = [];
     flutterers = [];
     cardGroups = new Map();
@@ -865,6 +925,12 @@ window.PMBoard = (function () {
       0.5,
       500
     );
+    baseZ = computeBaseZ();
+    camZ.cur = baseZ * 1.9;
+    camZ.target = baseZ;
+    const stops0 = scrollStops();
+    camY.cur = camY.target = stops0.top;
+    lookY.cur = stops0.top;
     camera.position.set(0, camY.cur, camZ.cur);
 
     /* lights */
@@ -897,6 +963,9 @@ window.PMBoard = (function () {
       camera.aspect = window.innerWidth / window.innerHeight;
       camera.updateProjectionMatrix();
       renderer.setSize(window.innerWidth, window.innerHeight);
+      baseZ = computeBaseZ();
+      if (!focus && viewMode !== "mobile-guided") camZ.target = baseZ;
+      if (focus && mobileLayout) focusCard(focus.grp);
       if (viewMode === "mobile-guided" && guided) {
         guided.settled = false;
         applyView(guidedView(guided.grp.userData.card), false);
@@ -974,10 +1043,10 @@ window.PMBoard = (function () {
           document.body.classList.remove("board-hover");
           if (onHoverChange) onHoverChange(null, null);
         }
-        const top = BOARD_TOP - 26;
-        const bot = BOARD_BOT + 22;
-        camY.target = top + (bot - top) * tt;
+        const stops = scrollStops();
+        camY.target = stops.top + (stops.bot - stops.top) * tt;
       },
+      scrollStops,
       jumpTo(y) { camY.target = y; lookY.cur = y; camY.cur = y; },
       showCard(cardId, options) {
         if (viewMode !== "mobile-guided") return false;

@@ -1,8 +1,9 @@
 /* ============================================================
    CASE FILE Nº 2026-PM — DOM glue
-   Decides 3D board vs flat file, maps scroll to the camera,
-   drives the detail dossier panel, renders the flat fallback,
-   and wires the tip-line (Formspree) form.
+   Decides 3D board vs flat file, maps scroll to the camera
+   (desktop wide board / mobile single-column board), drives
+   the dossier panel, renders the flat fallback, and wires the
+   tip-line (Formspree) form.
    ============================================================ */
 
 (function () {
@@ -38,12 +39,6 @@
   const dossierClose = document.getElementById("dossier-close");
   const dossierPaper = dossier.querySelector(".dossier-paper");
   const boardTooltip = document.getElementById("board-tooltip");
-  const mobileCaseRail = document.getElementById("mobile-case-rail");
-  const mobileCasePrev = document.getElementById("mobile-case-prev");
-  const mobileCaseNext = document.getElementById("mobile-case-next");
-  const mobileCaseRegion = document.getElementById("mobile-case-region");
-  const mobileCaseCount = document.getElementById("mobile-case-count");
-  const mobileCaseTitle = document.getElementById("mobile-case-title");
   const tipline = document.getElementById("tipline");
   const tiplineClose = document.getElementById("tipline-close");
   let flatInitialized = false;
@@ -52,30 +47,7 @@
     return D.cards.find((c) => c.id === id);
   }
 
-  const guidedSequences = {
-    subject: ["profile"],
-    trail: D.cards
-      .filter((card) => card.region === "trail" && (card.detail || card.detailRef))
-      .sort((a, b) => a.pos[1] - b.pos[1])
-      .map((card) => card.id),
-    evidence: D.cards
-      .filter((card) => card.region === "evidence" && (card.detail || card.detailRef))
-      .map((card) => card.id),
-    mo: ["mo-card"],
-  };
-
-  const guidedRegionLabels = {
-    subject: "SUBJECT",
-    trail: "THE TRAIL",
-    evidence: "EVIDENCE",
-    mo: "M.O.",
-    tipline: "TIP LINE",
-  };
-
-  /* ---------------- dossier panel ---------------- */
-
-  let closeDossierExtra = null;
-  let dossierReturnFocus = null;
+  /* ---------------- board tooltip (desktop hover) ---------------- */
 
   function hideBoardTooltip() {
     if (!boardTooltip) return;
@@ -108,6 +80,11 @@
     boardTooltip.style.top = `${Math.max(margin, Math.min(top, window.innerHeight - height - margin))}px`;
   }
 
+  /* ---------------- dossier panel ---------------- */
+
+  let closeDossierExtra = null;
+  let dossierReturnFocus = null;
+
   function openDossier(card, returnFocus) {
     let src = card;
     if (card.detailRef) src = cardById(card.detailRef) || card;
@@ -128,7 +105,6 @@
     dossier.classList.add("open");
     dossier.setAttribute("aria-hidden", "false");
     document.body.classList.add("dossier-open");
-    if (mobile3D) mobileCaseRail.setAttribute("aria-hidden", "true");
     requestAnimationFrame(() => dossierClose.focus({ preventScroll: true }));
   }
 
@@ -143,7 +119,6 @@
       dossierClose.blur();
     }
     dossier.setAttribute("aria-hidden", "true");
-    if (mobile3D) mobileCaseRail.setAttribute("aria-hidden", "false");
     dossierReturnFocus = null;
   }
 
@@ -165,59 +140,29 @@
     }
   }
 
-  let tiplineReturnFocus = null;
-  let closeTiplineExtra = null;
+  /* ---------------- tip line visibility ---------------- */
 
-  function openTipline(returnFocus) {
-    tiplineReturnFocus = returnFocus || (document.activeElement !== document.body ? document.activeElement : null);
-    tipline.classList.add("visible");
-    tipline.setAttribute("aria-hidden", "false");
-    tipline.setAttribute("role", "dialog");
-    tipline.setAttribute("aria-modal", "true");
-    tipline.setAttribute("aria-labelledby", "tipline-heading");
-    document.body.classList.add("tipline-open");
-    if (mobile3D) mobileCaseRail.setAttribute("aria-hidden", "true");
-    tipline.scrollTop = 0;
-    requestAnimationFrame(() => tiplineClose.focus({ preventScroll: true }));
+  let tiplineDismissed = false;
+
+  function setTiplineVisible(visible) {
+    tipline.classList.toggle("visible", visible);
+    tipline.setAttribute("aria-hidden", String(!visible));
   }
 
-  function closeTipline() {
-    if (!tipline.classList.contains("visible") || !document.body.classList.contains("tipline-open")) return;
-    tipline.classList.remove("visible");
-    tipline.setAttribute("aria-hidden", "true");
-    tipline.removeAttribute("role");
-    tipline.removeAttribute("aria-modal");
-    tipline.removeAttribute("aria-labelledby");
-    document.body.classList.remove("tipline-open");
-    if (mobile3D) mobileCaseRail.setAttribute("aria-hidden", "false");
-    if (closeTiplineExtra) closeTiplineExtra();
-    if (tiplineReturnFocus && tiplineReturnFocus.isConnected) {
-      tiplineReturnFocus.focus({ preventScroll: true });
-    } else {
-      tiplineClose.blur();
-    }
-    tiplineReturnFocus = null;
-  }
+  tiplineClose.addEventListener("click", () => {
+    tiplineDismissed = true;
+    setTiplineVisible(false);
+  });
 
   dossierClose.addEventListener("click", closeDossier);
-  tiplineClose.addEventListener("click", closeTipline);
   document.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && dossier.classList.contains("open")) {
       e.preventDefault();
       closeDossier();
       return;
     }
-
-    if (e.key === "Escape" && document.body.classList.contains("tipline-open")) {
-      e.preventDefault();
-      closeTipline();
-      return;
-    }
-
     if (e.key === "Tab" && dossier.classList.contains("open")) {
       trapFocus(dossier, e);
-    } else if (e.key === "Tab" && document.body.classList.contains("tipline-open")) {
-      trapFocus(tipline, e);
     }
   });
 
@@ -231,20 +176,12 @@
     }, 900);
   }
 
-  function setActiveRegion(regionId) {
-    document.querySelectorAll(".case-tabs [data-region]").forEach((link) => {
-      link.classList.toggle("active", link.dataset.region === regionId);
-    });
-  }
-
   function fallbackToFlat(error) {
     console.error("3D evidence board failed; opening text view instead.", error);
     closeDossierExtra = null;
-    closeTiplineExtra = null;
     hideBoardTooltip();
-    mobileCaseRail.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("mode-3d", "mode-mobile-3d", "dossier-open", "tipline-open");
-    tipline.classList.remove("visible");
+    document.body.classList.remove("mode-3d", "mode-mobile-3d", "dossier-open");
+    setTiplineVisible(false);
     initFlat();
   }
 
@@ -273,202 +210,64 @@
         Promise.all(fontPromises).catch(() => []),
       ]);
       const images = Object.fromEntries(pairs);
-      let guidedRegion = "subject";
-      let guidedIndex = 0;
-      let currentGuidedCardId = "profile";
-      let tiplineReturnCardId = null;
-      let pendingTiplineTrigger = null;
-      let api = null;
 
-      function guidedLocation(cardId) {
-        for (const [regionId, ids] of Object.entries(guidedSequences)) {
-          const index = ids.indexOf(cardId);
-          if (index !== -1) return { regionId, index, ids };
-        }
-        return null;
-      }
-
-      function guidedTitle(card) {
-        if (card.title) return card.title;
-        if (card.tag) return `${card.tag} · ${card.caption || "EVIDENCE"}`;
-        if (card.detailRef) return cardById(card.detailRef)?.title || card.caption || "CASE FILE";
-        return card.caption || "CASE FILE";
-      }
-
-      function updateGuidedRail(card) {
-        if (!mobile3D || !card) return;
-        currentGuidedCardId = card.id;
-        const location = guidedLocation(card.id);
-        if (location) {
-          guidedRegion = location.regionId;
-          guidedIndex = location.index;
-          mobileCaseRegion.textContent = guidedRegionLabels[guidedRegion];
-          mobileCaseCount.textContent = `${guidedIndex + 1} OF ${location.ids.length}`;
-          mobileCasePrev.disabled = guidedIndex === 0;
-          mobileCaseNext.disabled = guidedIndex === location.ids.length - 1;
-          mobileCasePrev.setAttribute("aria-label", `Previous ${guidedRegionLabels[guidedRegion]} case`);
-          mobileCaseNext.setAttribute("aria-label", `Next ${guidedRegionLabels[guidedRegion]} case`);
-          setActiveRegion(guidedRegion);
-        } else {
-          mobileCaseRegion.textContent = guidedRegionLabels[card.region] || "CASE FILE";
-          mobileCaseCount.textContent = "CONTACT";
-          mobileCasePrev.disabled = true;
-          mobileCaseNext.disabled = true;
-          mobileCasePrev.setAttribute("aria-label", "Previous case unavailable");
-          mobileCaseNext.setAttribute("aria-label", "Next case unavailable");
-          setActiveRegion(card.region);
-        }
-        mobileCaseTitle.textContent = guidedTitle(card);
-      }
-
-      function viewportInsets() {
-        const navRect = document.querySelector(".casebar").getBoundingClientRect();
-        const railRect = mobileCaseRail.getBoundingClientRect();
-        const rootStyle = getComputedStyle(document.documentElement);
-        const safeLeft = parseFloat(rootStyle.getPropertyValue("--safe-left")) || 0;
-        const safeRight = parseFloat(rootStyle.getPropertyValue("--safe-right")) || 0;
-        return {
-          top: Math.ceil(navRect.bottom + 10),
-          right: Math.ceil(Math.max(12, safeRight + 10)),
-          bottom: Math.ceil(Math.max(72, window.innerHeight - railRect.top + 10)),
-          left: Math.ceil(Math.max(12, safeLeft + 10)),
-        };
-      }
-
-      function showGuidedRegion(regionId, index) {
-        const ids = guidedSequences[regionId];
-        if (!ids || !ids.length || !api) return;
-        guidedRegion = regionId;
-        guidedIndex = Math.max(0, Math.min(index || 0, ids.length - 1));
-        pendingTiplineTrigger = null;
-        api.showCard(ids[guidedIndex]);
-      }
-
-      function stepGuided(direction) {
-        const ids = guidedSequences[guidedRegion];
-        if (!ids || !ids.length) return;
-        const nextIndex = guidedIndex + direction;
-        if (nextIndex < 0 || nextIndex >= ids.length) return;
-        showGuidedRegion(guidedRegion, nextIndex);
-      }
-
-      if (mobile3D) mobileCaseRail.setAttribute("aria-hidden", "false");
-
-      api = window.PMBoard.init({
+      const api = window.PMBoard.init({
         canvas: document.getElementById("board-canvas"),
         images,
-        viewMode: mobile3D ? "mobile-guided" : "desktop-scroll",
-        initialCardId: "profile",
-        getViewportInsets: mobile3D ? viewportInsets : null,
+        viewMode: mobile3D ? "mobile-scroll" : "desktop-scroll",
         onHoverChange: mobile3D || coarsePointer ? null : updateBoardTooltip,
         onFocusChange(card) {
-          if (!mobile3D && card) openDossier(card);
-        },
-        onCardChange(card) {
-          updateGuidedRail(card);
-        },
-        onCardSettled(card) {
-          if (mobile3D && card.id === "tip-plaque" && pendingTiplineTrigger) {
-            const trigger = pendingTiplineTrigger;
-            pendingTiplineTrigger = null;
-            openTipline(trigger);
-          }
-        },
-        onCardActivate(card) {
-          if (mobile3D) openDossier(card);
-        },
-        onStepRequest(direction) {
-          if (mobile3D) stepGuided(direction);
+          if (card) openDossier(card);
         },
       });
 
-      closeDossierExtra = mobile3D ? null : () => api.unfocus();
+      closeDossierExtra = () => api.unfocus();
 
-      if (mobile3D) {
-        scrollSpace.style.height = "0";
-        const caseTitle = document.querySelector(".case-title");
-        caseTitle.setAttribute("aria-label", "Return to subject profile");
+      /* scroll → camera (same mechanics on desktop and mobile) */
+      const SPACE_VH = mobile3D ? 10 : 7.2;
+      scrollSpace.style.height = SPACE_VH * 100 + "vh";
 
-        closeTiplineExtra = () => {
-          if (!tiplineReturnCardId) return;
-          const returnId = tiplineReturnCardId;
-          tiplineReturnCardId = null;
-          api.showCard(returnId);
-        };
+      const stops = api.scrollStops();
+      const regionY = (r) => (mobile3D && r.yM != null ? r.yM : r.y);
+      const tiplineThreshold = mobile3D ? 0.96 : 0.88;
 
-        caseTitle.addEventListener("click", (e) => {
-          e.preventDefault();
-          pendingTiplineTrigger = null;
-          closeDossier();
-          closeTipline();
-          showGuidedRegion("subject", 0);
+      function updateNav(t) {
+        const camY = stops.top + (stops.bot - stops.top) * t;
+        let best = null, bd = 1e9;
+        D.regions.forEach((r) => {
+          const d = Math.abs(regionY(r) - camY);
+          if (d < bd) { bd = d; best = r.id; }
         });
-
-        document.querySelectorAll(".case-tabs [data-region]").forEach((link) => {
-          link.addEventListener("click", (e) => {
-            e.preventDefault();
-            closeDossier();
-            closeTipline();
-            const regionId = link.dataset.region;
-            setActiveRegion(regionId);
-            if (regionId === "tipline") {
-              if (guidedLocation(currentGuidedCardId)) tiplineReturnCardId = currentGuidedCardId;
-              else if (!tiplineReturnCardId) tiplineReturnCardId = "profile";
-              pendingTiplineTrigger = link;
-              api.showCard("tip-plaque");
-            } else {
-              showGuidedRegion(regionId, 0);
-            }
-          });
-        });
-
-        mobileCasePrev.addEventListener("click", () => stepGuided(-1));
-        mobileCaseNext.addEventListener("click", () => stepGuided(1));
-      } else {
-        /* scroll → camera */
-        const SPACE_VH = 7.2;
-        scrollSpace.style.height = SPACE_VH * 100 + "vh";
-
-        const TOP = 150 - 26, BOT = -160 + 22;
-
-        function updateNav(t) {
-          const camY = TOP + (BOT - TOP) * t;
-          let best = null, bd = 1e9;
-          D.regions.forEach((r) => {
-            const d = Math.abs(r.y - camY);
-            if (d < bd) { bd = d; best = r.id; }
-          });
-          document.querySelectorAll("[data-region]").forEach((a) => {
-            a.classList.toggle("active", a.dataset.region === best);
-          });
-        }
-
-        function onScroll() {
-          const max = document.documentElement.scrollHeight - window.innerHeight;
-          const t = max > 0 ? window.scrollY / max : 0;
-          api.setScrollT(t);
-          const showTipline = t > 0.88;
-          tipline.classList.toggle("visible", showTipline);
-          tipline.setAttribute("aria-hidden", String(!showTipline));
-          updateNav(t);
-        }
-        window.addEventListener("scroll", onScroll, { passive: true });
-
-        /* nav jumps */
         document.querySelectorAll("[data-region]").forEach((a) => {
-          a.addEventListener("click", (e) => {
-            e.preventDefault();
-            closeDossier();
-            const reg = D.regions.find((r) => r.id === a.dataset.region);
-            const t = (reg.y - TOP) / (BOT - TOP);
-            const max = document.documentElement.scrollHeight - window.innerHeight;
-            window.scrollTo({ top: t * max, behavior: "smooth" });
-          });
+          a.classList.toggle("active", a.dataset.region === best);
         });
-
-        onScroll();
       }
 
+      function onScroll() {
+        const max = document.documentElement.scrollHeight - window.innerHeight;
+        const t = max > 0 ? window.scrollY / max : 0;
+        api.setScrollT(t);
+        if (t < 0.8) tiplineDismissed = false;
+        setTiplineVisible(t > tiplineThreshold && !tiplineDismissed);
+        updateNav(t);
+      }
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      /* nav jumps */
+      document.querySelectorAll("[data-region]").forEach((a) => {
+        a.addEventListener("click", (e) => {
+          e.preventDefault();
+          closeDossier();
+          const reg = D.regions.find((r) => r.id === a.dataset.region);
+          if (!reg) return;
+          const t = Math.max(0, Math.min(1, (regionY(reg) - stops.top) / (stops.bot - stops.top)));
+          const max = document.documentElement.scrollHeight - window.innerHeight;
+          if (reg.id === "tipline") tiplineDismissed = false;
+          window.scrollTo({ top: t * max, behavior: "smooth" });
+        });
+      });
+
+      onScroll();
       finishLoading();
     } catch (error) {
       fallbackToFlat(error);
@@ -483,17 +282,10 @@
       return;
     }
     flatInitialized = true;
-    closeTiplineExtra = null;
-    mobileCaseRail.setAttribute("aria-hidden", "true");
-    document.body.classList.remove("mode-3d", "mode-mobile-3d", "dossier-open", "tipline-open");
+    document.body.classList.remove("mode-3d", "mode-mobile-3d", "dossier-open");
     document.body.classList.add("mode-flat");
     scrollSpace.style.height = "0";
     const root = document.getElementById("flat-root");
-
-    const typeLabel = {
-      report: "case report", index: "index card", lead: "new lead",
-      photo: "exhibit", polaroid: "photo", banner: "", note: "note",
-    };
 
     function threadInto(id) {
       return D.threads.filter((t) => t.to === id);
@@ -566,8 +358,8 @@
     `;
 
     function activateFlatFile(el) {
-        const c = cardById(el.dataset.open);
-        if (c) openDossier(c, el);
+      const c = cardById(el.dataset.open);
+      if (c) openDossier(c, el);
     }
 
     root.querySelectorAll("[data-open]").forEach((el) => {
@@ -583,11 +375,7 @@
     });
 
     hideBoardTooltip();
-    tipline.classList.add("visible");
-    tipline.setAttribute("aria-hidden", "false");
-    tipline.removeAttribute("role");
-    tipline.removeAttribute("aria-modal");
-    tipline.removeAttribute("aria-labelledby");
+    setTiplineVisible(true);
     finishLoading();
   }
 

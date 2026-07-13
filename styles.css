@@ -602,103 +602,15 @@ body.mode-flat {
 }
 body.mode-3d .flat-footer { display: none; }
 
-/* ---------------- mobile guided 3D tour ---------------- */
-
-body.mode-mobile-3d {
-  height: 100dvh;
-  overflow: hidden;
-  overscroll-behavior: none;
-}
+/* ---------------- mobile 3D board (single-column, scroll-driven) ---------------- */
 
 body.mode-mobile-3d #board-canvas {
   width: 100vw;
   height: 100dvh;
-  touch-action: none;
+  touch-action: pan-y; /* the page scroll drives the camera */
 }
 
-body.mode-mobile-3d #scroll-space,
 body.mode-mobile-3d #board-tooltip { display: none; }
-
-body.mode-mobile-3d #mobile-case-rail {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 150;
-  display: grid;
-  grid-template-columns: 48px minmax(0, 1fr) 48px;
-  align-items: center;
-  gap: 0.65rem;
-  min-height: 88px;
-  padding:
-    0.55rem
-    max(0.7rem, env(safe-area-inset-right))
-    max(0.55rem, env(safe-area-inset-bottom))
-    max(0.7rem, env(safe-area-inset-left));
-  color: var(--paper);
-  background: linear-gradient(180deg, rgba(16, 25, 15, 0.92), rgba(10, 16, 10, 0.98));
-  border-top: 1px dashed rgba(240, 231, 211, 0.52);
-  box-shadow: 0 -10px 28px rgba(0, 0, 0, 0.38);
-  transition: opacity 0.2s ease;
-}
-
-body.mode-mobile-3d #mobile-case-rail button {
-  width: 48px;
-  height: 48px;
-  border: 1.5px solid rgba(240, 231, 211, 0.68);
-  border-radius: 2px;
-  background: rgba(240, 231, 211, 0.1);
-  color: var(--paper);
-  font-family: var(--font-type);
-  font-size: 1.35rem;
-  line-height: 1;
-  cursor: pointer;
-}
-
-body.mode-mobile-3d #mobile-case-rail button:active { transform: scale(0.94); }
-body.mode-mobile-3d #mobile-case-rail button:disabled {
-  opacity: 0.28;
-  cursor: default;
-}
-
-.mobile-case-copy {
-  min-width: 0;
-  text-align: center;
-  font-family: var(--font-type);
-}
-
-.mobile-case-kicker {
-  display: flex;
-  justify-content: center;
-  gap: 0.65rem;
-  margin: 0 0 0.05rem;
-  color: var(--focus-ring);
-  font-size: 0.62rem;
-  line-height: 1.2;
-  letter-spacing: 0.12em;
-}
-
-#mobile-case-title {
-  overflow: hidden;
-  margin: 0;
-  color: var(--paper);
-  font-size: 0.82rem;
-  line-height: 1.25;
-  letter-spacing: 0.08em;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.mobile-case-hint {
-  margin: 0.12rem 0 0;
-  color: rgba(240, 231, 211, 0.7);
-  font-size: 0.55rem;
-  line-height: 1.2;
-  letter-spacing: 0.08em;
-}
-
-body.mode-mobile-3d.dossier-open #mobile-case-rail,
-body.mode-mobile-3d.tipline-open #mobile-case-rail { opacity: 0; pointer-events: none; }
 
 body.mode-mobile-3d .casebar {
   display: grid;
@@ -775,77 +687,53 @@ body.mode-mobile-3d .mode-switch { opacity: 0.76; }
     padding: 0.48rem 0.62rem 0.38rem;
   }
 
-  body.mode-mobile-3d #mobile-case-rail {
-    min-height: 58px;
-    gap: 0.5rem;
-    padding:
-      0.28rem
-      max(0.6rem, env(safe-area-inset-right))
-      max(0.28rem, env(safe-area-inset-bottom))
-      max(0.6rem, env(safe-area-inset-left));
-  }
-
-  body.mode-mobile-3d #mobile-case-rail button {
-    width: 48px;
-    height: 48px;
-  }
-
-  body.mode-mobile-3d .mobile-case-copy {
-    display: grid;
-    grid-template-columns: max-content minmax(0, 1fr);
-    align-items: center;
-    column-gap: 0.7rem;
-  }
-
-  body.mode-mobile-3d .mobile-case-kicker { margin: 0; }
-  body.mode-mobile-3d #mobile-case-title { text-align: left; font-size: 0.74rem; }
-  body.mode-mobile-3d .mobile-case-hint { display: none; }
 }
 
+/* dossier as a bottom sheet so the focused card stays visible above it */
 body.mode-mobile-3d #dossier {
-  inset: 0;
+  inset: auto 0 0 0;
   width: 100vw;
-  height: 100dvh;
+  height: auto;
+  max-height: 62dvh;
   display: block;
-  transform: translateX(102%);
+  transform: translateY(105%);
 }
 
-body.mode-mobile-3d #dossier.open { transform: translateX(0); }
+body.mode-mobile-3d #dossier.open { transform: translateY(0); }
 
 body.mode-mobile-3d .dossier-paper {
   width: 100%;
-  height: 100%;
+  height: 62dvh;
   margin: 0;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.55);
   padding:
-    calc(1.2rem + env(safe-area-inset-top))
+    1.6rem
     calc(1.25rem + env(safe-area-inset-right))
     calc(1.5rem + env(safe-area-inset-bottom))
     calc(1.25rem + env(safe-area-inset-left));
   overscroll-behavior: contain;
 }
 
+/* tip line as a tall bottom sheet with its own close button */
 body.mode-mobile-3d #tipline {
   position: fixed;
-  inset: 0;
+  inset: auto 0 0 0;
   width: 100vw;
-  height: 100dvh;
+  max-height: 86dvh;
   padding: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
   transform: translateY(105%);
-  background: var(--wall-deep);
 }
 
 body.mode-mobile-3d #tipline.visible { transform: translateY(0); }
 
 body.mode-mobile-3d .tip-paper {
-  min-height: 100%;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 8px 8px 0 0;
+  box-shadow: 0 -18px 40px rgba(0, 0, 0, 0.55);
   padding:
-    calc(1.2rem + env(safe-area-inset-top))
+    1.6rem
     calc(1.25rem + env(safe-area-inset-right))
     calc(1.5rem + env(safe-area-inset-bottom))
     calc(1.25rem + env(safe-area-inset-left));
