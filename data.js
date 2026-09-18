@@ -48,10 +48,10 @@ window.CASE_DATA = {
       lines: [
         "NAME ....... MAHESHWARI, PRINCY",
         "BASE ....... ATLANTA, GEORGIA",
-        "STATUS ..... B.S. COMPUTER SCIENCE,",
+        "STATUS ..... B.S. COMPUTER SCIENCE & MATHEMATICS,",
         "             GEORGIA STATE UNIVERSITY",
         "             PRESIDENTIAL SCHOLAR (FULL RIDE)",
-        "GPA ........ 4.25 / 4.3",
+        "GPA ........ 4.3 / 4.3",
         "",
         "KNOWN BEHAVIOR: enters a field she has",
         "never touched — reads the literature,",
