@@ -287,9 +287,8 @@ window.CASE_DATA = {
       title: "ORIGIN: GEORGIA STATE",
       date: "AUG 2025 · WHERE THE TRAIL STARTS",
       lines: [
-        "B.S. Computer Science, class of",
-        "2029. Presidential Scholar on a",
-        "full ride. GPA 4.25/4.3. Math,",
+        "B.S. Computer Science & Mathematics. Presidential Scholar on a",
+        "full ride. GPA 4.3/4.3. Math,",
         "ML, and an alarming appetite",
         "for new problems.",
       ],
