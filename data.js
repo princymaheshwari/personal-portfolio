@@ -298,7 +298,7 @@ window.CASE_DATA = {
         heading: "Origin — Georgia State University",
         body: [
           "B.S. in Computer Science, Aug 2025 – May 2029. Presidential Scholar on a full-ride merit scholarship, GPA 4.25/4.3.",
-          "Relevant training records: Code Path AI110 (Foundations of AI Engineering), CSC 1301/1302 (Principles of CS I & II), Calculus I & II, Discrete Mathematics.",
+          "Relevant Coursework: Cornell University Machine Learning Foundations,Data Structures & Algorithms, Computer Organization & Programming, Calculus I, II & III, Linear Algebra, Probability & Statistics, Discrete Mathematics.",
           "Everything above this card on the board traces back here.",
         ],
         links: [],
