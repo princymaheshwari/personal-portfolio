@@ -536,7 +536,9 @@
               return `<li class="flat-card" data-card="${c.id}">
                 <p class="flat-date">${c.date || ""}</p>
                 <h3>${c.title}</h3>
-                <p class="flat-p">${(c.lines || []).join(" ")}</p>
+                ${c.lineBlocks
+                  ? `<div class="flat-p">${(c.lines || []).map((line) => `<div>${line}</div>`).join("")}</div>`
+                  : `<p class="flat-p">${(c.lines || []).join(" ")}</p>`}
                 ${tags}
                 <button class="flat-more" data-open="${c.id}" aria-haspopup="dialog" aria-label="Read the file for ${c.title}">read the file →</button>
               </li>`;
