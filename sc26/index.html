@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>SC26 — Princy Maheshwari</title>
+  <meta name="description" content="SC26 landing page." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap"
+    rel="stylesheet" />
+  <link rel="icon" href="../assets/favicon.png" type="image/png" />
+  <style>
+    :root {
+      --wall: #152119;
+      --paper: #f0e7d3;
+      --ink: #2b2620;
+      --oxblood: #7e1f24;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { margin: 0; min-height: 100%; }
+
+    body {
+      background: var(--wall);
+      color: var(--paper);
+      font-family: "Courier Prime", "Courier New", monospace;
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header, footer {
+      padding: 16px max(16px, env(safe-area-inset-left));
+      font-size: 0.85rem;
+      letter-spacing: 0.08em;
+    }
+
+    header a, footer a { color: var(--paper); text-decoration: none; }
+    header a:hover, footer a:hover { text-decoration: underline; }
+
+    main {
+      flex: 1;
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 32px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    h1 {
+      font-family: "Special Elite", "Courier New", monospace;
+      font-weight: 400;
+      font-size: clamp(3rem, 14vw, 8rem);
+      margin: 0;
+      line-height: 1;
+    }
+
+    @media (min-width: 768px) {
+      header, footer { padding: 24px 40px; }
+      main { padding: 48px 40px; }
+    }
+  </style>
+</head>
+
+<body>
+  <header><a href="../">← PRINCY MAHESHWARI</a></header>
+  <main>
+    <h1>SC26</h1>
+    <!-- content goes here -->
+  </main>
+  <footer>© 2026 PRINCY MAHESHWARI</footer>
+</body>
+
+</html>
