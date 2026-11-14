@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
   <title>Princy Maheshwari — SC26</title>
   <meta name="description"
-    content="Princy Maheshwari: Computer Science undergraduate at Georgia State University. Software engineering, HPC, and AI infrastructure. Resume, projects, and contact links for SC26." />
+    content="Princy Maheshwari: Computer Science undergraduate at Georgia State University. Software engineering, HPC, and AI infrastructure. Projects, experience, and contact links for SC26." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap"
@@ -97,15 +97,6 @@
     .btn .fill { fill: currentColor; }
     .btn .stroke { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
 
-    .btn.primary {
-      grid-column: 1 / -1;
-      background: var(--oxblood);
-      border-color: var(--oxblood);
-      font-size: 1.1rem;
-    }
-
-    .btn.primary:hover { background: var(--oxblood-hover); }
-
     nav.actions .btn:last-child { grid-column: 1 / -1; }
 
     .portfolio-link {
@@ -188,8 +179,8 @@
     @media (min-width: 768px) {
       body { font-size: 1.125rem; }
       .wrap { padding-top: 40px; padding-bottom: 72px; }
-      .actions { grid-template-columns: repeat(4, 1fr); }
-      .btn.primary, nav.actions .btn:last-child { grid-column: auto; font-size: 1rem; }
+      nav.actions { grid-template-columns: repeat(3, 1fr); }
+      nav.actions .btn:last-child { grid-column: auto; }
       footer .actions { grid-template-columns: repeat(2, 1fr); max-width: 420px; }
       .card { padding: 20px; }
     }
@@ -207,10 +198,6 @@
     </header>
 
     <nav class="actions" aria-label="Primary links">
-      <a class="btn primary" href="../assets/princy_maheshwari_resume.pdf" download="Princy_Maheshwari_Resume.pdf">
-        <svg class="stroke" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6"/><path d="M9.500 14.500 12 17l2.500-2.500"/></svg>
-        Resume (PDF)
-      </a>
       <a class="btn" href="https://linkedin.com/in/princy-maheshwari1" target="_blank" rel="noopener">
         <svg class="fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3V9.5zm6.5 0h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.1c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4V9.5z"/></svg>
         LinkedIn
@@ -246,7 +233,8 @@
         <p>Built GeneFamilyConverge, an open-source Python tool for running large-scale genomic analysis workflows on HPC
           clusters. Used Snakemake, Docker, and SLURM to manage workloads and parallel execution, reducing benchmark
           runtime by 65%, from 63 to 22 hours. Designed for large genomic datasets and benchmarked on 114 species.</p>
-        <a class="link" href="https://github.com/wkmeyer-lab/GeneFamilyConverge" target="_blank" rel="noopener">GeneFamilyConverge on GitHub →</a>
+        <a class="link" href="https://github.com/wkmeyer-lab/GeneFamilyConverge" target="_blank" rel="noopener">GeneFamilyConverge on GitHub →</a><br />
+        <a class="link" href="https://www.linkedin.com/feed/update/urn:li:activity:7498042030896414720/" target="_blank" rel="noopener">Learn more about my experience →</a>
       </article>
 
       <article class="card">
