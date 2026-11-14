@@ -4,8 +4,9 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>SC26 — Princy Maheshwari</title>
-  <meta name="description" content="SC26 landing page." />
+  <title>Princy Maheshwari — SC26</title>
+  <meta name="description"
+    content="Princy Maheshwari: Computer Science undergraduate at Georgia State University. Software engineering, HPC, and AI infrastructure. Resume, projects, and contact links for SC26." />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Special+Elite&family=Courier+Prime:wght@400;700&display=swap"
@@ -14,67 +15,325 @@
   <style>
     :root {
       --wall: #152119;
+      --wall-deep: #10190f;
       --paper: #f0e7d3;
-      --ink: #2b2620;
-      --oxblood: #7e1f24;
+      --paper-dim: #cfc6b0;
+      --card: #1c2b21;
+      --line: #3a4a3d;
+      --oxblood: #a3272e;
+      --oxblood-hover: #bd3139;
+      --kraft: #d4ae7c;
+      --font-type: "Special Elite", "Courier New", monospace;
+      --font-mono: "Courier Prime", "Courier New", monospace;
     }
 
     * { box-sizing: border-box; }
 
-    html, body { margin: 0; min-height: 100%; }
+    html { -webkit-text-size-adjust: 100%; }
 
     body {
+      margin: 0;
       background: var(--wall);
       color: var(--paper);
-      font-family: "Courier Prime", "Courier New", monospace;
-      min-height: 100vh;
-      min-height: 100dvh;
-      display: flex;
-      flex-direction: column;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      line-height: 1.55;
+      overflow-x: hidden;
     }
 
-    header, footer {
-      padding: 16px max(16px, env(safe-area-inset-left));
-      font-size: 0.85rem;
-      letter-spacing: 0.08em;
-    }
+    a { color: var(--kraft); overflow-wrap: anywhere; }
+    a:focus-visible { outline: 3px solid #d76468; outline-offset: 3px; }
 
-    header a, footer a { color: var(--paper); text-decoration: none; }
-    header a:hover, footer a:hover { text-decoration: underline; }
-
-    main {
-      flex: 1;
-      width: 100%;
-      max-width: 1100px;
+    .wrap {
+      max-width: 720px;
       margin: 0 auto;
-      padding: 32px 16px;
-      display: flex;
-      flex-direction: column;
-      justify-content: center;
+      padding: 20px max(16px, env(safe-area-inset-right)) 48px max(16px, env(safe-area-inset-left));
     }
 
-    h1 {
-      font-family: "Special Elite", "Courier New", monospace;
-      font-weight: 400;
-      font-size: clamp(3rem, 14vw, 8rem);
-      margin: 0;
-      line-height: 1;
+    .back {
+      display: inline-block;
+      padding: 10px 0;
+      font-size: 0.9rem;
+      letter-spacing: 0.06em;
+      text-decoration: none;
+      color: var(--paper-dim);
+    }
+
+    h1, h2, h3 { font-family: var(--font-type); font-weight: 400; margin: 0; }
+
+    h1 { font-size: clamp(2.2rem, 10vw, 3.4rem); line-height: 1.05; margin-top: 8px; }
+
+    .subtitle { margin: 10px 0 0; color: var(--kraft); font-size: 1rem; }
+    .affil { margin: 6px 0 0; color: var(--paper-dim); font-size: 0.95rem; }
+    .intro { margin-top: 8px; }
+    .intro p { margin: 14px 0 0; }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    .btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 54px;
+      padding: 12px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+      color: var(--paper);
+      text-decoration: none;
+      font-weight: 700;
+      font-size: 1rem;
+    }
+
+    .btn { white-space: nowrap; }
+    .btn:hover { border-color: var(--kraft); }
+    .btn svg { width: 22px; height: 22px; flex: none; }
+    .btn .fill { fill: currentColor; }
+    .btn .stroke { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+
+    .btn.primary {
+      grid-column: 1 / -1;
+      background: var(--oxblood);
+      border-color: var(--oxblood);
+      font-size: 1.1rem;
+    }
+
+    .btn.primary:hover { background: var(--oxblood-hover); }
+
+    nav.actions .btn:last-child { grid-column: 1 / -1; }
+
+    .portfolio-link {
+      display: inline-block;
+      margin-top: 14px;
+      padding: 8px 0;
+      font-size: 0.95rem;
+    }
+
+    section { margin-top: 44px; }
+
+    h2 {
+      font-size: 1.6rem;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 16px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+
+    .card h3 { font-size: 1.2rem; line-height: 1.25; }
+    .card .meta { margin: 4px 0 0; color: var(--kraft); font-size: 0.92rem; }
+    .card p { margin: 10px 0 0; }
+
+    .card .link {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 6px 0;
+      font-weight: 700;
+    }
+
+    .award {
+      display: inline-block;
+      margin-top: 10px;
+      padding: 4px 10px;
+      border: 1px solid var(--kraft);
+      border-radius: 999px;
+      color: var(--kraft);
+      font-size: 0.88rem;
+    }
+
+    .tags {
+      list-style: none;
+      margin: 12px 0 0;
+      padding: 0;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .tags li {
+      padding: 3px 9px;
+      background: var(--wall-deep);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      font-size: 0.85rem;
+      color: var(--paper-dim);
+    }
+
+    .more { display: inline-block; margin-top: 8px; padding: 8px 0; font-weight: 700; }
+
+    .interests .tags { margin-top: 0; }
+    .interests .tags li { font-size: 0.95rem; padding: 5px 11px; }
+
+    footer { margin-top: 48px; padding-top: 24px; border-top: 1px solid var(--line); }
+    footer p { margin: 0 0 14px; font-family: var(--font-type); font-size: 1.2rem; }
+    footer .actions { margin-top: 0; }
+    footer p.copyright { margin: 24px 0 0; font-family: var(--font-mono); font-size: 0.85rem; color: var(--paper-dim); }
+
+    @media (max-width: 340px) {
+      .actions { grid-template-columns: 1fr; }
     }
 
     @media (min-width: 768px) {
-      header, footer { padding: 24px 40px; }
-      main { padding: 48px 40px; }
+      body { font-size: 1.125rem; }
+      .wrap { padding-top: 40px; padding-bottom: 72px; }
+      .actions { grid-template-columns: repeat(4, 1fr); }
+      .btn.primary, nav.actions .btn:last-child { grid-column: auto; font-size: 1rem; }
+      footer .actions { grid-template-columns: repeat(2, 1fr); max-width: 420px; }
+      .card { padding: 20px; }
     }
   </style>
 </head>
 
 <body>
-  <header><a href="../">← PRINCY MAHESHWARI</a></header>
-  <main>
-    <h1>SC26</h1>
-    <!-- content goes here -->
-  </main>
-  <footer>© 2026 PRINCY MAHESHWARI</footer>
+  <div class="wrap">
+    <a class="back" href="../">← princymaheshwari.me</a>
+
+    <header>
+      <h1>Princy Maheshwari</h1>
+      <p class="subtitle">Computer Science Undergraduate | Software Engineering · HPC · AI Infrastructure</p>
+      <p class="affil">Georgia State University | Presidential Scholar | SIGHPC Student Immersion Program, SC26</p>
+    </header>
+
+    <nav class="actions" aria-label="Primary links">
+      <a class="btn primary" href="../assets/princy_maheshwari_resume.pdf" download="Princy_Maheshwari_Resume.pdf">
+        <svg class="stroke" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5"/><path d="M12 11v6"/><path d="M9.500 14.500 12 17l2.500-2.500"/></svg>
+        Resume (PDF)
+      </a>
+      <a class="btn" href="https://linkedin.com/in/princy-maheshwari1" target="_blank" rel="noopener">
+        <svg class="fill" viewBox="0 0 24 24" aria-hidden="true"><path d="M4.98 3.5a2.5 2.5 0 1 1 0 5 2.5 2.5 0 0 1 0-5zM3 9.5h4V21H3V9.5zm6.5 0h3.8v1.6h.1c.5-1 1.8-2 3.8-2 4 0 4.8 2.6 4.8 6V21h-4v-5.1c0-1.2 0-2.8-1.7-2.8s-2 1.3-2 2.7V21h-4V9.5z"/></svg>
+        LinkedIn
+      </a>
+      <a class="btn" href="https://github.com/princymaheshwari" target="_blank" rel="noopener">
+        <svg class="fill" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/></svg>
+        GitHub
+      </a>
+      <a class="btn" href="mailto:princymaheshwari069@gmail.com">
+        <svg class="stroke" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 7 9 6 9-6"/></svg>
+        Email
+      </a>
+      <!-- X/Twitter: no verified profile URL exists in the codebase; add a link here if one is provided. -->
+    </nav>
+    <a class="portfolio-link" href="https://princymaheshwari.me">Main portfolio → princymaheshwari.me</a>
+
+    <div class="intro">
+      <p>I'm a Computer Science undergraduate and Presidential Scholar at Georgia State University. I enjoy building
+        software systems, from scientific computing workflows on HPC clusters to GPU-powered machine learning
+        applications and backend infrastructure.</p>
+      <p>I've worked on research projects at Lehigh University and Georgia State University, and I regularly build
+        projects at hackathons.</p>
+      <p>I'm attending SC26 to learn more about large-scale computing and connect with engineers, researchers, and
+        companies working on HPC, AI infrastructure, and software systems.</p>
+    </div>
+
+    <section aria-labelledby="exp">
+      <h2 id="exp">Experience</h2>
+
+      <article class="card">
+        <h3>Lehigh University — Research Systems Engineer</h3>
+        <p class="meta">May 2026 – Present</p>
+        <p>Built GeneFamilyConverge, an open-source Python tool for running large-scale genomic analysis workflows on HPC
+          clusters. Used Snakemake, Docker, and SLURM to manage workloads and parallel execution, reducing benchmark
+          runtime by 65%, from 63 to 22 hours. Designed for large genomic datasets and benchmarked on 114 species.</p>
+        <a class="link" href="https://github.com/wkmeyer-lab/GeneFamilyConverge" target="_blank" rel="noopener">GeneFamilyConverge on GitHub →</a>
+      </article>
+
+      <article class="card">
+        <h3>Georgia State University — Data Engineering Research Scholar</h3>
+        <p class="meta">Oct 2025 – May 2026</p>
+        <p>Built Python pipelines to combine and standardize 30 years of satellite observations across different
+          instruments and data formats. Developed solar energetic particle detection methods that identified 159/159
+          validated events while reducing false alarms to 9.2%.</p>
+        <a class="link" href="https://github.com/princymaheshwari/solar-energetic-particle-event-detection-pipeline" target="_blank" rel="noopener">Project on GitHub →</a>
+      </article>
+
+      <article class="card">
+        <h3>Break Through Tech AI, Cornell Tech — AI/ML Fellow</h3>
+        <p class="meta">Mar 2026 – Present</p>
+        <p>Working on machine learning and feature engineering to identify potentially fraudulent insurance claims as part
+          of an industry AI Studio project with LexisNexis Risk Solutions.</p>
+      </article>
+    </section>
+
+    <section aria-labelledby="proj">
+      <h2 id="proj">Selected Projects</h2>
+
+      <article class="card">
+        <h3>ToolFinder — GPU-Powered Object Finder</h3>
+        <p>A voice-controlled tool finder that uses computer vision to locate requested objects in a live camera feed.
+          Deployed PyTorch detection and segmentation models on Modal A10G/H100 GPUs with a FastAPI inference backend.</p>
+        <ul class="tags"><li>Python</li><li>PyTorch</li><li>YOLO</li><li>FastAPI</li><li>Modal</li><li>GPU inference</li></ul>
+        <a class="link" href="https://github.com/princymaheshwari/ToolFinder" target="_blank" rel="noopener">GitHub →</a>
+      </article>
+
+      <article class="card">
+        <h3>CoFounder — AI Operations Platform</h3>
+        <p>An AI operations platform built solo at Cal Hacks 13.0. Coordinates 11 specialized agents to manage business
+          workflows, with shared state, task handoffs, approval rules, and external API integrations.</p>
+        <span class="award">Award: Best Use of Apify — Cal Hacks 13.0</span>
+        <ul class="tags"><li>Convex</li><li>Apify</li><li>AI agents</li><li>APIs</li><li>Workflow orchestration</li></ul>
+        <a class="link" href="https://github.com/princymaheshwari/CoFounder" target="_blank" rel="noopener">GitHub →</a>
+      </article>
+
+      <article class="card">
+        <h3>Snacxx — Group Planning Assistant</h3>
+        <p>An iMessage-based assistant that helps groups decide where and what to eat based on dietary restrictions,
+          budgets, and preferences. Built using a serverless backend with persistent conversation state and event-driven
+          workflows.</p>
+        <ul class="tags"><li>TypeScript</li><li>AWS Lambda</li><li>DynamoDB</li><li>Aurora PostgreSQL</li><li>EventBridge</li></ul>
+      </article>
+
+      <article class="card">
+        <h3>Veritas.dev — Documentation Verification</h3>
+        <p>A GitHub App that detects documentation inconsistencies when code changes. Uses source-code parsing and
+          LLM-based analysis to compare implementation details with documentation.</p>
+        <ul class="tags"><li>Python</li><li>FastAPI</li><li>AST</li><li>Tree-sitter</li><li>GitHub API</li></ul>
+        <a class="link" href="https://github.com/princymaheshwari/Veritas" target="_blank" rel="noopener">GitHub →</a>
+      </article>
+
+      <article class="card">
+        <h3>BidBy — AI Financial Obligation Assistant</h3>
+        <p>An AI assistant that identifies financial obligations and deadlines, prioritizes tasks based on urgency and
+          risk, and supports messaging and voice-based interaction.</p>
+        <span class="award">Award: Finance Track Winner &amp; ElevenLabs Challenge Winner — Hack Like W@CC</span>
+        <a class="link" href="https://github.com/princymaheshwari/BidBy" target="_blank" rel="noopener">GitHub →</a>
+      </article>
+
+      <a class="more" href="https://github.com/princymaheshwari" target="_blank" rel="noopener">View all my projects on GitHub →</a>
+    </section>
+
+    <section class="interests" aria-labelledby="int">
+      <h2 id="int">What I'm Interested In</h2>
+      <ul class="tags">
+        <li>Software Engineering</li>
+        <li>High-Performance Computing</li>
+        <li>AI/ML Infrastructure</li>
+        <li>Distributed Systems</li>
+        <li>Backend &amp; Cloud Infrastructure</li>
+        <li>Scientific Computing</li>
+      </ul>
+    </section>
+
+    <footer>
+      <p>Met me at SC26? I'd love to stay connected.</p>
+      <div class="actions">
+        <a class="btn" href="https://linkedin.com/in/princy-maheshwari1" target="_blank" rel="noopener">LinkedIn</a>
+        <a class="btn" href="mailto:princymaheshwari069@gmail.com">Email</a>
+      </div>
+      <p class="copyright">© 2026 Princy Maheshwari</p>
+    </footer>
+  </div>
 </body>
 
 </html>
